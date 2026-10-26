@@ -20,8 +20,9 @@ interface SidebarProps {
   variant?: "desktop" | "drawer";
 }
 
-function initials(name: string) {
-  return name.slice(0, 2).toUpperCase();
+/** Inisial avatar: 1 huruf pertama username saja (mis. "axell" → "A"). */
+function initial(name: string) {
+  return (name.trim().charAt(0) || "?").toUpperCase();
 }
 
 export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant = "desktop" }: SidebarProps) {
@@ -140,13 +141,13 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
               onClick={onNavigate}
               className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg border border-glass-border bg-white/[0.06] text-label font-semibold text-text"
             >
-              {initials(user.username)}
+              {initial(user.username)}
             </Link>
           </Tooltip>
         ) : (
           <div className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-glass-border bg-white/[0.06] text-label font-semibold text-text">
-              {initials(user.username)}
+              {initial(user.username)}
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-body text-text">{user.username}</p>
