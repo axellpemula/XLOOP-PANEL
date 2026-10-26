@@ -171,8 +171,8 @@ export function KeyTable({
                             event.stopPropagation();
                             onToggleBan(key);
                           }}
-                          aria-label={key.status === "banned" ? "Unban key" : "BanIcon key"}
-                          title={key.status === "banned" ? "Unban" : "BanIcon"}
+                          aria-label={key.status === "banned" ? "Unban key" : "Ban key"}
+                          title={key.status === "banned" ? "Unban" : "Ban"}
                         >
                           <BanIcon size={16} strokeWidth={1.5} className={key.status === "banned" ? "text-banned" : ""} />
                         </Button>

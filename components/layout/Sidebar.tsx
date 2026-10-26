@@ -103,7 +103,11 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
                 {isActive && (
                   <motion.span
                     layoutId={variant === "drawer" ? "sidebar-bar-drawer" : "sidebar-bar"}
-                    className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-accent"
+                    // Tanpa class -translate-y-1/2: framer-motion menimpa
+                    // transform dari class saat animasi layout, jadi bar
+                    // bergeser setengah tingginya. Pakai motion value y.
+                    style={{ y: "-50%" }}
+                    className="absolute left-0 top-1/2 h-5 w-0.5 rounded-full bg-accent"
                     transition={
                       reduce ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }
                     }

@@ -220,7 +220,16 @@ textarea.field {
 *:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(139, 147, 255, 0.38);
-  border-radius: 8px;
+  /* Jangan paksa border-radius di sini: CSS tanpa layer ini mengalahkan
+     utilitas Tailwind, jadi elemen rounded-full (mis. track Switch)
+     berubah jadi sudut 8px setiap menerima fokus keyboard. */
+}
+
+/* iOS Safari auto-zoom saat fokus ke input berfont < 16px. */
+@media (max-width: 767px) {
+  .field {
+    font-size: 16px;
+  }
 }
 
 .tabular {

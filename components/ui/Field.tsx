@@ -29,8 +29,22 @@ export function FieldWrap({ label, hint, error, htmlFor, children, className }: 
 }
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(
-  function Input({ className, invalid, ...props }, ref) {
-    return <input ref={ref} className={cn("field", invalid && "field-error", className)} {...props} />;
+  function Input({ className, invalid, type, onWheel, ...props }, ref) {
+    return (
+      <input
+        ref={ref}
+        type={type}
+        aria-invalid={invalid || undefined}
+        className={cn("field", invalid && "field-error", className)}
+        onWheel={(event) => {
+          // Input number yang sedang fokus nilainya berubah saat roda mouse
+          // digulir — mudah mengubah angka tanpa sadar selagi scroll halaman.
+          if (type === "number") event.currentTarget.blur();
+          onWheel?.(event);
+        }}
+        {...props}
+      />
+    );
   }
 );
 
@@ -38,5 +52,12 @@ export const Textarea = forwardRef<
   HTMLTextAreaElement,
   React.TextareaHTMLAttributes<HTMLTextAreaElement> & { invalid?: boolean }
 >(function Textarea({ className, invalid, ...props }, ref) {
-  return <textarea ref={ref} className={cn("field", invalid && "field-error", className)} {...props} />;
+  return (
+    <textarea
+      ref={ref}
+      aria-invalid={invalid || undefined}
+      className={cn("field", invalid && "field-error", className)}
+      {...props}
+    />
+  );
 });

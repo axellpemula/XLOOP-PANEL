@@ -46,7 +46,13 @@ export function LoginForm() {
         method: "POST",
         body: JSON.stringify({ email: email.trim(), password }),
       });
-      router.replace(nextPath.startsWith("/") ? nextPath : "/dashboard");
+      // Tolak "//host lain" & backslash: startsWith("/") saja masih lolos
+      // untuk URL protocol-relative yang mengarah keluar situs.
+      const safeNext =
+        nextPath.startsWith("/") && !nextPath.startsWith("//") && !nextPath.startsWith("/\\")
+          ? nextPath
+          : "/dashboard";
+      router.replace(safeNext);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal login. Coba lagi.");

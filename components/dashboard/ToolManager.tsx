@@ -48,6 +48,8 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
   const [versionSaving, setVersionSaving] = useState(false);
   const [versionError, setVersionError] = useState<string | null>(null);
   const [versionDelete, setVersionDelete] = useState<{ tool: ToolType; version: ToolVersion } | null>(null);
+  const [versionDeleting, setVersionDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -130,15 +132,21 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
   }
 
   async function toggleTool(tool: ToolType) {
+    const nextActive = !tool.is_active;
+    // Klik ganda: payload sama terkirim 2x, state lokal terbalik 2x → UI != server.
+    if (togglingId === tool.id) return;
+    setTogglingId(tool.id);
     try {
       await apiFetch(`/api/tools/${tool.id}`, {
         method: "PUT",
-        body: JSON.stringify({ is_active: !tool.is_active }),
+        body: JSON.stringify({ is_active: nextActive }),
       });
-      setTools((prev) => prev.map((item) => (item.id === tool.id ? { ...item, is_active: !item.is_active } : item)));
-      toast(tool.is_active ? "Tool dinonaktifkan." : "Tool diaktifkan.", "success");
+      setTools((prev) => prev.map((item) => (item.id === tool.id ? { ...item, is_active: nextActive } : item)));
+      toast(nextActive ? "Tool diaktifkan." : "Tool dinonaktifkan.", "success");
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal mengubah status.", "error");
+    } finally {
+      setTogglingId(null);
     }
   }
 
@@ -196,20 +204,26 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
   }
 
   async function toggleVersion(tool: ToolType, version: ToolVersion) {
+    const nextActive = !version.is_active;
+    if (togglingId === version.id) return;
+    setTogglingId(version.id);
     try {
       await apiFetch(`/api/tools/${tool.id}/versions/${version.id}`, {
         method: "PUT",
-        body: JSON.stringify({ is_active: !version.is_active }),
+        body: JSON.stringify({ is_active: nextActive }),
       });
       await load();
-      toast(version.is_active ? "Version dinonaktifkan." : "Version diaktifkan.", "success");
+      toast(nextActive ? "Version diaktifkan." : "Version dinonaktifkan.", "success");
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal mengubah status.", "error");
+    } finally {
+      setTogglingId(null);
     }
   }
 
   async function confirmVersionDelete() {
-    if (!versionDelete) return;
+    if (!versionDelete || versionDeleting) return;
+    setVersionDeleting(true);
     try {
       await apiFetch(`/api/tools/${versionDelete.tool.id}/versions/${versionDelete.version.id}`, {
         method: "DELETE",
@@ -220,6 +234,8 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal menghapus version.", "error");
       setVersionDelete(null);
+    } finally {
+      setVersionDeleting(false);
     }
   }
 
@@ -243,7 +259,9 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
             <p className="text-label text-muted">Public key verifikasi</p>
             <p className="mt-0.5 text-label text-muted">Tanam di sisi tool untuk cek signature response.</p>
           </div>
-          <CopyButton value={publicKey ?? ""} label="Salin public key" toastMessage="Public key disalin" />
+          {/* Sembunyikan saat key belum diset: tombol lama menyalin string
+              kosong tapi tetap menampilkan toast "disalin". */}
+          {publicKey && <CopyButton value={publicKey} label="Salin public key" toastMessage="Public key disalin" />}
         </div>
         <pre className="mt-2 max-h-24 overflow-auto scroll-area rounded-lg border border-glass-border bg-white/[0.04] p-3 font-mono text-[11px] leading-5 text-muted">
 {publicKey ?? "LICENSE_SIGNING_PUBLIC_KEY belum diset di environment."}
@@ -319,7 +337,14 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                         <td className="tabular">{formatNumber(tool.version_count ?? 0)}</td>
                         <td className="tabular">{formatNumber(tool.active_key_count ?? 0)}</td>
                         <td>
-                          <button type="button" onClick={() => toggleTool(tool)} className="cursor-pointer">
+                          <button
+                            type="button"
+                            onClick={() => toggleTool(tool)}
+                            disabled={togglingId === tool.id}
+                            className="cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                            aria-label={`${tool.is_active ? "Nonaktifkan" : "Aktifkan"} tool ${tool.name}`}
+                            title={tool.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
+                          >
                             <SimpleBadge tone={tool.is_active ? "active" : "muted"}>
                               {tool.is_active ? "Aktif" : "Nonaktif"}
                             </SimpleBadge>
@@ -385,7 +410,10 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                                           <button
                                             type="button"
                                             onClick={() => toggleVersion(tool, version)}
-                                            className="cursor-pointer"
+                                            disabled={togglingId === version.id}
+                                            className="cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                                            aria-label={`${version.is_active ? "Nonaktifkan" : "Aktifkan"} version ${version.name}`}
+                                            title={version.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
                                           >
                                             <SimpleBadge tone={version.is_active ? "active" : "muted"}>
                                               {version.is_active ? "Aktif" : "Nonaktif"}
@@ -433,6 +461,8 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
         onClose={() => setFormOpen(false)}
         title={editing ? "Edit Tool" : "Tambah Tool"}
         description="Slug dipakai tool untuk validasi."
+        busy={saving}
+        onSubmit={submitTool}
         footer={
           <>
             <Button onClick={() => setFormOpen(false)} disabled={saving}>
@@ -481,6 +511,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
 
           <FieldWrap
             label="Payload rahasia"
+            htmlFor={secretLabel ? undefined : "tool-secret"}
             hint="Dikirim ke tool hanya saat validasi sukses. Tidak pernah dikirim balik ke browser."
           >
             {secretLabel ? (
@@ -494,6 +525,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
               </div>
             ) : (
               <Textarea
+                id="tool-secret"
                 value={form.secret}
                 placeholder="Isi payload rahasia tool…"
                 className="font-mono text-label"
@@ -512,6 +544,8 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
         onClose={() => setVersionFormTool(null)}
         title={versionEditing ? "Edit Version" : "Tambah Version"}
         size="sm"
+        busy={versionSaving}
+        onSubmit={submitVersion}
         footer={
           <>
             <Button onClick={() => setVersionFormTool(null)} disabled={versionSaving}>
@@ -554,6 +588,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
         message={`Version "${versionDelete?.version.name ?? ""}" akan dihapus permanen.`}
         confirmLabel="Hapus"
         destructive
+        loading={versionDeleting}
         onConfirm={confirmVersionDelete}
         onClose={() => setVersionDelete(null)}
       />

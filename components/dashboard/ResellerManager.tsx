@@ -44,6 +44,8 @@ export function ResellerManager() {
   const [deleteTarget, setDeleteTarget] = useState<Reseller | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -59,6 +61,13 @@ export function ResellerManager() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  function openCreate() {
+    // Bersihkan error sisa percobaan sebelumnya supaya tidak muncul lagi
+    // saat modal dibuka ulang.
+    setCreateError(null);
+    setCreateOpen(true);
+  }
 
   async function createReseller() {
     setCreateError(null);
@@ -109,18 +118,25 @@ export function ResellerManager() {
     }
   }
 
-  async function toggleActive(reseller: Reseller) {
+  async function toggleActive(reseller: Reseller, nextActive: boolean = !reseller.is_active) {
+    // Abaikan klik ganda selagi request berjalan: payload yang sama terkirim
+    // dua kali sementara state lokal terbalik dua kali → UI ≠ server.
+    if (togglingId === reseller.id) return;
+    setTogglingId(reseller.id);
     try {
       await apiFetch(`/api/resellers/${reseller.id}`, {
         method: "PUT",
-        body: JSON.stringify({ action: "toggle", is_active: !reseller.is_active }),
+        body: JSON.stringify({ action: "toggle", is_active: nextActive }),
       });
-      setRows((prev) =>
-        prev.map((row) => (row.id === reseller.id ? { ...row, is_active: !row.is_active } : row))
-      );
-      toast(reseller.is_active ? "Reseller dinonaktifkan." : "Reseller diaktifkan.", "success");
+      setRows((prev) => prev.map((row) => (row.id === reseller.id ? { ...row, is_active: nextActive } : row)));
+      // Modal detail membaca dari detailTarget, bukan rows — tanpa ini
+      // Switch di modal detail tidak bergerak walau API sukses.
+      setDetailTarget((prev) => (prev?.id === reseller.id ? { ...prev, is_active: nextActive } : prev));
+      toast(nextActive ? "Reseller diaktifkan." : "Reseller dinonaktifkan.", "success");
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal mengubah status.", "error");
+    } finally {
+      setTogglingId(null);
     }
   }
 
@@ -183,7 +199,7 @@ export function ResellerManager() {
         title="Reseller"
         description="Kelola akun reseller, credit, dan akses login."
         action={
-          <Button variant="primary" onClick={() => setCreateOpen(true)} icon={<PlusIcon size={16} strokeWidth={1.5} />}>
+          <Button variant="primary" onClick={openCreate} icon={<PlusIcon size={16} strokeWidth={1.5} />}>
             Tambah Reseller
           </Button>
         }
@@ -218,11 +234,7 @@ export function ResellerManager() {
               {!loading && rows.length === 0 && (
                 <tr>
                   <td colSpan={6}>
-                    <EmptyState
-                      message="Belum ada reseller"
-                      actionLabel="Tambah Reseller"
-                      onAction={() => setCreateOpen(true)}
-                    />
+                    <EmptyState message="Belum ada reseller" actionLabel="Tambah Reseller" onAction={openCreate} />
                   </td>
                 </tr>
               )}
@@ -235,7 +247,14 @@ export function ResellerManager() {
                     <td className="tabular text-text">{formatNumber(reseller.credit)}</td>
                     <td className="tabular text-muted">{formatNumber(reseller.key_count ?? 0)}</td>
                     <td>
-                      <button type="button" onClick={() => toggleActive(reseller)} className="cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={() => toggleActive(reseller)}
+                        disabled={togglingId === reseller.id}
+                        className="cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                        aria-label={`${reseller.is_active ? "Nonaktifkan" : "Aktifkan"} ${reseller.username}`}
+                        title={reseller.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
+                      >
                         <SimpleBadge tone={reseller.is_active ? "active" : "banned"}>
                           {reseller.is_active ? "Aktif" : "Nonaktif"}
                         </SimpleBadge>
@@ -299,6 +318,8 @@ export function ResellerManager() {
         onClose={() => setCreateOpen(false)}
         title="Tambah Reseller"
         description="Akun langsung aktif, tanpa verifikasi email."
+        busy={creating}
+        onSubmit={createReseller}
         footer={
           <>
             <Button onClick={() => setCreateOpen(false)} disabled={creating}>
@@ -311,9 +332,14 @@ export function ResellerManager() {
         }
       >
         <div className="flex flex-col gap-3">
+          {/* autoComplete dimatikan/diarahkan ke kredensial baru: form ini
+              membuat akun ORANG LAIN, jadi browser jangan mengisi otomatis
+              email/password milik Owner yang sedang login. */}
           <FieldWrap label="Username" htmlFor="reseller-username">
             <Input
               id="reseller-username"
+              name="reseller-username"
+              autoComplete="off"
               value={createForm.username}
               placeholder="reseller01"
               onChange={(event) => setCreateForm((prev) => ({ ...prev, username: event.target.value }))}
@@ -323,7 +349,9 @@ export function ResellerManager() {
           <FieldWrap label="Email" htmlFor="reseller-email">
             <Input
               id="reseller-email"
+              name="reseller-email"
               type="email"
+              autoComplete="off"
               value={createForm.email}
               placeholder="reseller01@xloop.dev"
               onChange={(event) => setCreateForm((prev) => ({ ...prev, email: event.target.value }))}
@@ -333,7 +361,9 @@ export function ResellerManager() {
           <FieldWrap label="Password" htmlFor="reseller-password" hint="Minimal 6 karakter.">
             <Input
               id="reseller-password"
+              name="reseller-password"
               type="text"
+              autoComplete="new-password"
               value={createForm.password}
               placeholder="Password awal"
               onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
@@ -362,6 +392,8 @@ export function ResellerManager() {
         title="Topup Credit"
         description={topupTarget?.username}
         size="sm"
+        busy={toppingUp}
+        onSubmit={submitTopup}
         footer={
           <>
             <Button onClick={() => setTopupTarget(null)} disabled={toppingUp}>
@@ -408,6 +440,8 @@ export function ResellerManager() {
         title="Reset Password"
         description={passwordTarget?.username}
         size="sm"
+        busy={savingPassword}
+        onSubmit={submitPassword}
         footer={
           <>
             <Button onClick={() => setPasswordTarget(null)} disabled={savingPassword}>
@@ -423,7 +457,9 @@ export function ResellerManager() {
           <FieldWrap label="Password baru" htmlFor="new-password" hint="Minimal 6 karakter.">
             <Input
               id="new-password"
+              name="new-password"
               type="text"
+              autoComplete="new-password"
               value={passwordValue}
               onChange={(event) => setPasswordValue(event.target.value)}
               placeholder="Password baru"
@@ -529,7 +565,12 @@ export function ResellerManager() {
 
             <div className="flex items-center justify-between rounded-lg border border-glass-border bg-white/[0.03] px-3 py-2">
               <span className="text-label text-muted">Akun aktif (bisa login)</span>
-              <Switch checked={detailTarget.is_active} onChange={() => toggleActive(detailTarget)} />
+              <Switch
+                checked={detailTarget.is_active}
+                onChange={(next) => toggleActive(detailTarget, next)}
+                disabled={togglingId === detailTarget.id}
+                ariaLabel={`Akun ${detailTarget.username} bisa login`}
+              />
             </div>
           </div>
         )}

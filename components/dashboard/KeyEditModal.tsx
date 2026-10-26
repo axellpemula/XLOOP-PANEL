@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { FieldWrap, Input, Textarea } from "@/components/ui/Field";
@@ -35,8 +35,18 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const openedKeyId = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!licenseKey) return;
+    if (!licenseKey) {
+      openedKeyId.current = null;
+      return;
+    }
+    // Reset form HANYA saat key yang dibuka berganti. Dependensi lama
+    // [licenseKey, presets] ikut mereset catatan/durasi yang sedang diketik
+    // setiap daftar preset selesai dimuat ulang di parent.
+    if (openedKeyId.current === licenseKey.id) return;
+    openedKeyId.current = licenseKey.id;
     setMode("extend");
     setDays("30");
     setNewDate(licenseKey.expired_at ? licenseKey.expired_at.slice(0, 10) : "");
@@ -125,6 +135,10 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
         onClose={onClose}
         title="Edit Key"
         description={licenseKey?.key_value}
+        busy={saving}
+        onSubmit={() => {
+          if (validate()) setConfirming(true);
+        }}
         footer={
           <>
             <Button onClick={onClose} disabled={saving}>
@@ -211,8 +225,9 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
             </>
           ) : (
             <>
-              <FieldWrap label="Perpanjang pakai preset" hint="Biaya credit mengikuti preset.">
+              <FieldWrap label="Perpanjang pakai preset" htmlFor="extend-preset" hint="Biaya credit mengikuti preset.">
                 <Select
+                  id="extend-preset"
                   value={presetId}
                   onChange={setPresetId}
                   placeholder="Pilih durasi"

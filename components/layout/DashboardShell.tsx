@@ -16,7 +16,10 @@ const STORAGE_KEY = "xloop:sidebar-collapsed";
 
 /** Floating glass shell: sidebar + topbar melayang, konten scroll sendiri. */
 export function DashboardShell({ user, children }: { user: SessionUser; children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Preferensi collapse eksplisit dari user; null = ikut default breakpoint
+  // (tablet kecilkan otomatis). Sebelumnya tablet memaksa collapsed sehingga
+  // tombol expand di lebar 768–1023px terlihat mati saat diklik.
+  const [collapsedPref, setCollapsedPref] = useState<boolean | null>(null);
   const [tablet, setTablet] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,9 +27,10 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
 
   useEffect(() => {
     try {
-      setCollapsed(window.localStorage.getItem(STORAGE_KEY) === "1");
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved !== null) setCollapsedPref(saved === "1");
     } catch {
-      setCollapsed(false);
+      // localStorage tidak tersedia (mode private) — pakai default breakpoint.
     }
 
     const tabletQuery = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
@@ -36,9 +40,11 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
     return () => tabletQuery.removeEventListener("change", applyTablet);
   }, []);
 
+  const isCollapsed = collapsedPref ?? tablet;
+
   const toggle = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
+    setCollapsedPref((prev) => {
+      const next = !(prev ?? tablet);
       try {
         window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
       } catch {
@@ -46,9 +52,15 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
       }
       return next;
     });
-  }, []);
+  }, [tablet]);
 
-  const isCollapsed = collapsed || tablet;
+  // Area konten adalah container scroll sendiri (bukan window), jadi
+  // scroll-restoration bawaan Next tidak menyentuhnya: tanpa ini halaman
+  // baru terbuka di posisi scroll halaman sebelumnya.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
+
   const title = useMemo(() => pageTitle(pathname), [pathname]);
 
   return (

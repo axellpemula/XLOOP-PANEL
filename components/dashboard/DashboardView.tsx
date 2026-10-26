@@ -165,10 +165,14 @@ export function DashboardView({ role, credit }: { role: Role; credit: number }) 
             <Reveal index={12} className="col-span-2">
               <GlassCard className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-body text-muted">Butuh key baru? Generate pakai sisa credit kamu.</p>
-                <Link href="/generate">
-                  <Button variant="primary" size="sm" icon={<PlusIcon size={16} strokeWidth={1.5} />}>
-                    Buat Key
-                  </Button>
+                {/* Link bergaya tombol — <button> di dalam <a> adalah
+                    elemen interaktif bersarang (HTML tidak valid). */}
+                <Link
+                  href="/generate"
+                  className="inline-flex h-8 min-h-8 items-center justify-center gap-2 rounded-lg bg-accent px-3 text-label font-semibold text-[var(--accent-ink)] transition-[filter,transform] duration-150 ease-out hover:brightness-110 active:scale-[0.97]"
+                >
+                  <PlusIcon size={16} strokeWidth={1.5} />
+                  Buat Key
                 </Link>
               </GlassCard>
             </Reveal>

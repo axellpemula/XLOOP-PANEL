@@ -91,7 +91,10 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
   const selectedVersion = versions.find((version) => version.id === versionId) ?? null;
   const selectedPreset = presets.find((preset) => preset.id === presetId) ?? null;
 
-  const qty = Math.max(1, Math.min(limits.maxQty, Number(quantity) || 1));
+  // Jangan clamp diam-diam: nilai mentah dipakai ringkasan & tombol, dan
+  // validasi di submit yang menolak di luar batas. Clamp lama membuat user
+  // mengetik 999 tapi tombol menulis jumlah lain tanpa penjelasan.
+  const qty = Number(quantity) || 0;
   const days = durationMode === "custom" && isOwner ? Number(customDays) || 0 : selectedPreset?.days ?? 0;
   const costPerKey = isOwner ? 0 : selectedPreset?.credit_cost ?? 0;
   const totalCost = costPerKey * qty;
@@ -207,8 +210,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
             ) : (
               <>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <FieldWrap label="Tool Type">
+                  <FieldWrap label="Tool Type" htmlFor="gen-tool">
                     <Select
+                      id="gen-tool"
                       value={toolId}
                       onChange={(value) => {
                         setToolId(value);
@@ -221,8 +225,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     />
                   </FieldWrap>
 
-                  <FieldWrap label="Version">
+                  <FieldWrap label="Version" htmlFor="gen-version">
                     <Select
+                      id="gen-version"
                       value={versionId}
                       onChange={setVersionId}
                       placeholder="Pilih version"
@@ -263,8 +268,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                 )}
 
                 {isOwner && durationMode === "custom" ? (
-                  <FieldWrap label="Custom durasi (hari)" hint="1–3650 hari.">
+                  <FieldWrap label="Custom durasi (hari)" htmlFor="gen-custom-days" hint="1–3650 hari.">
                     <Input
+                      id="gen-custom-days"
                       type="number"
                       min={1}
                       max={3650}
@@ -274,8 +280,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     />
                   </FieldWrap>
                 ) : (
-                  <FieldWrap label="Durasi">
+                  <FieldWrap label="Durasi" htmlFor="gen-duration">
                     <Select
+                      id="gen-duration"
                       value={presetId}
                       onChange={setPresetId}
                       placeholder="Pilih durasi"
@@ -289,8 +296,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                 )}
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <FieldWrap label="Max device" hint={`Minimal 1, maksimal ${limits.maxDevice}.`}>
+                  <FieldWrap label="Max device" htmlFor="gen-max-device" hint={`Minimal 1, maksimal ${limits.maxDevice}.`}>
                     <Input
+                      id="gen-max-device"
                       type="number"
                       min={1}
                       max={limits.maxDevice}
@@ -300,8 +308,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     />
                   </FieldWrap>
 
-                  <FieldWrap label="Quantity" hint={`1–${limits.maxQty} key sekaligus.`}>
+                  <FieldWrap label="Quantity" htmlFor="gen-quantity" hint={`1–${limits.maxQty} key sekaligus.`}>
                     <Input
+                      id="gen-quantity"
                       type="number"
                       min={1}
                       max={limits.maxQty}
@@ -312,8 +321,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                   </FieldWrap>
                 </div>
 
-                <FieldWrap label="Catatan" hint="Opsional, maksimal 500 karakter.">
+                <FieldWrap label="Catatan" htmlFor="gen-note" hint="Opsional, maksimal 500 karakter.">
                   <Textarea
+                    id="gen-note"
                     value={note}
                     maxLength={500}
                     onChange={(event) => setNote(event.target.value)}
@@ -393,7 +403,7 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
             </div>
             <div className="flex items-center gap-2">
               <Button size="sm" onClick={copyAll}>
-                CopyIcon Semua
+                Salin Semua
               </Button>
               <Button size="sm" onClick={exportTxt} icon={<DownloadIcon size={16} strokeWidth={1.5} />}>
                 Export .txt
@@ -410,7 +420,7 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
           <ul className="flex flex-col gap-1 rounded-lg border border-glass-border bg-white/[0.03] p-2">
             {result.keys.map((key) => (
               <li key={key} className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-white/5">
-                <span className="flex items-center gap-2 font-mono text-label text-text">
+                <span className="flex min-w-0 items-center gap-2 break-all font-mono text-label text-text">
                   <KeyIcon size={14} strokeWidth={1.5} className="text-muted" />
                   {key}
                 </span>

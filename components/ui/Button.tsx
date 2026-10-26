@@ -29,13 +29,17 @@ const sizes: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "ghost", size = "md", loading, icon, className, children, disabled, ...props },
+  { variant = "ghost", size = "md", loading, icon, className, children, disabled, type = "button", ...props },
   ref
 ) {
   return (
     <button
       ref={ref}
+      // Default type="button": tanpa ini, Button di dalam <form> berperilaku
+      // sebagai submit dan memicu pengiriman form yang tidak disengaja.
+      type={type}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className={cn(base, variants[variant], sizes[size], className)}
       {...props}
     >

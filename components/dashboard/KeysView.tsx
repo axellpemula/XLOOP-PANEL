@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, RefreshIcon, SearchIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -79,7 +79,12 @@ export function KeysView({ role, credit }: KeysViewProps) {
     return () => window.clearTimeout(timer);
   }, [search]);
 
+  // Nomor urut request: respons lama yang datang belakangan (koneksi lambat,
+  // filter diganti cepat) tidak boleh menimpa hasil filter terbaru.
+  const loadSeq = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = (loadSeq.current += 1);
     setLoading(true);
     try {
       const [sort, order] = sortValue.split(":");
@@ -96,13 +101,15 @@ export function KeysView({ role, credit }: KeysViewProps) {
       if (resellerId && isOwner) params.set("reseller", resellerId);
 
       const result = await apiFetch<Paginated<LicenseKey>>(`/api/keys?${params.toString()}`);
+      if (seq !== loadSeq.current) return;
       setRows(result.data);
       setTotal(result.total);
       setTotalPages(result.totalPages);
     } catch (error) {
+      if (seq !== loadSeq.current) return;
       toast(error instanceof Error ? error.message : "Gagal memuat key.", "error");
     } finally {
-      setLoading(false);
+      if (seq === loadSeq.current) setLoading(false);
     }
   }, [page, perPage, debouncedSearch, status, toolId, versionId, resellerId, sortValue, isOwner, toast]);
 
