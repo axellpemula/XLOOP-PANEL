@@ -31,7 +31,9 @@ export function Switch({ checked, onChange, label, ariaLabel, disabled, id }: Sw
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={label ? undefined : ariaLabel}
+      // ariaLabel eksplisit selalu menang; tanpa itu nama aksesibel diambil
+      // dari teks label yang terlihat.
+      aria-label={ariaLabel}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(

@@ -43,6 +43,9 @@ const SORT_OPTIONS = [
   { value: "expired_at:asc", label: "Expired terdekat" },
   { value: "expired_at:desc", label: "Expired terjauh" },
   { value: "status:asc", label: "Status A–Z" },
+  // Klik header Status di tabel bisa menghasilkan status:desc; tanpa opsi
+  // ini Select menampilkan placeholder padahal sort-nya sedang aktif.
+  { value: "status:desc", label: "Status Z–A" },
 ];
 
 export function KeysView({ role, credit, initialSearch = "" }: KeysViewProps) {
@@ -296,9 +299,7 @@ export function KeysView({ role, credit, initialSearch = "" }: KeysViewProps) {
           ariaLabel="Urutkan"
         />
 
-        <Button onClick={load} loading={loading} aria-label="Muat ulang">
-          <RefreshIcon size={16} strokeWidth={1.5} />
-        </Button>
+        <Button onClick={load} loading={loading} aria-label="Muat ulang" icon={<RefreshIcon size={16} strokeWidth={1.5} />} />
       </div>
 
       <KeyTable
@@ -342,6 +343,9 @@ export function KeysView({ role, credit, initialSearch = "" }: KeysViewProps) {
         onSaved={() => {
           void load();
           void refreshCredit();
+          // Layout (chip credit di header) dirender server — segarkan juga
+          // supaya saldo di header tidak tertinggal setelah perpanjangan.
+          router.refresh();
         }}
       />
 

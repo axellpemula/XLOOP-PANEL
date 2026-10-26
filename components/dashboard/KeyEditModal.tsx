@@ -7,7 +7,7 @@ import { FieldWrap, Input, Textarea } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { apiFetch } from "@/lib/api/client";
-import { formatDateTime, formatNumber } from "@/lib/utils/format";
+import { formatDateInputValue, formatDateTime, formatNumber } from "@/lib/utils/format";
 import type { DurationPreset, LicenseKey, Role } from "@/lib/utils/types";
 
 interface KeyEditModalProps {
@@ -49,7 +49,9 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
     openedKeyId.current = licenseKey.id;
     setMode("extend");
     setDays("30");
-    setNewDate(licenseKey.expired_at ? licenseKey.expired_at.slice(0, 10) : "");
+    // Jangan slice string ISO mentah: itu tanggal UTC, sedangkan tanggal
+    // yang dilihat user di panel adalah WIB — bisa beda satu hari.
+    setNewDate(formatDateInputValue(licenseKey.expired_at));
     setPresetId(presets[0]?.id ?? "");
     setNote(licenseKey.note ?? "");
     setMaxDevice(String(licenseKey.max_device));
@@ -165,6 +167,7 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
+                    aria-pressed={mode === "extend"}
                     onClick={() => setMode("extend")}
                     className={`h-9 rounded-lg border px-3 text-label transition-colors duration-150 ${
                       mode === "extend"
@@ -176,6 +179,7 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
                   </button>
                   <button
                     type="button"
+                    aria-pressed={mode === "set"}
                     onClick={() => setMode("set")}
                     className={`h-9 rounded-lg border px-3 text-label transition-colors duration-150 ${
                       mode === "set"
@@ -264,7 +268,11 @@ export function KeyEditModal({ licenseKey, role, credit, presets, onClose, onSav
             />
           </FieldWrap>
 
-          {error && <p className="text-label text-banned">{error}</p>}
+          {error && (
+            <p className="text-label text-banned" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       </Modal>
 

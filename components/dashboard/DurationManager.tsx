@@ -228,10 +228,10 @@ export function DurationManager() {
                     </td>
                     <td>
                       <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" onClick={() => openEdit(item)} aria-label="Edit durasi">
+                        <Button size="sm" onClick={() => openEdit(item)} aria-label={`Edit durasi ${item.name}`}>
                           <PencilIcon size={16} strokeWidth={1.5} />
                         </Button>
-                        <Button size="sm" onClick={() => setDeleteTarget(item)} aria-label="Hapus durasi">
+                        <Button size="sm" onClick={() => setDeleteTarget(item)} aria-label={`Hapus durasi ${item.name}`}>
                           <TrashIcon size={16} strokeWidth={1.5} />
                         </Button>
                       </div>
@@ -305,7 +305,11 @@ export function DurationManager() {
             />
           </div>
 
-          {error && <p className="text-label text-banned">{error}</p>}
+          {error && (
+            <p className="text-label text-banned" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       </Modal>
 

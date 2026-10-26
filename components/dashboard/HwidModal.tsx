@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ResetIcon, TrashIcon } from "@/components/icons";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -27,16 +27,23 @@ export function HwidModal({ licenseKey, onClose, onChanged }: HwidModalProps) {
   const [resetTarget, setResetTarget] = useState<DeviceLog | null>(null);
   const [confirmAll, setConfirmAll] = useState(false);
 
+  // Guard urutan request: membuka key B selagi device key A masih dimuat
+  // tidak boleh membuat daftar device A tampil di modal B.
+  const loadSeq = useRef(0);
+
   const load = useCallback(async () => {
     if (!licenseKey) return;
+    const seq = (loadSeq.current += 1);
     setLoading(true);
     try {
       const result = await apiFetch<{ devices: DeviceLog[] }>(`/api/keys/${licenseKey.id}/devices`);
+      if (seq !== loadSeq.current) return;
       setDevices(result.devices);
     } catch (error) {
+      if (seq !== loadSeq.current) return;
       toast(error instanceof Error ? error.message : "Gagal memuat device.", "error");
     } finally {
-      setLoading(false);
+      if (seq === loadSeq.current) setLoading(false);
     }
   }, [licenseKey, toast]);
 
@@ -110,7 +117,7 @@ export function HwidModal({ licenseKey, onClose, onChanged }: HwidModalProps) {
               <div className="rounded-lg border border-glass-border bg-white/[0.03] p-3">
                 <p className="text-label text-muted">Key</p>
                 <div className="mt-1 flex items-center gap-1">
-                  <span className="font-mono text-label text-text">{licenseKey.key_value}</span>
+                  <span className="min-w-0 break-all font-mono text-label text-text">{licenseKey.key_value}</span>
                   <CopyButton value={licenseKey.key_value} label="Salin key" toastMessage="Key disalin" />
                 </div>
               </div>
@@ -199,7 +206,7 @@ export function HwidModal({ licenseKey, onClose, onChanged }: HwidModalProps) {
                           <td className="tabular text-muted">{index + 1}</td>
                           <td>
                             <div className="flex items-center gap-1">
-                              <span className="font-mono text-label text-text">{device.hardware_id}</span>
+                              <span className="min-w-0 break-all font-mono text-label text-text">{device.hardware_id}</span>
                               <CopyButton value={device.hardware_id} label="Salin HWID" toastMessage="HWID disalin" />
                             </div>
                           </td>
@@ -210,7 +217,7 @@ export function HwidModal({ licenseKey, onClose, onChanged }: HwidModalProps) {
                               <Button
                                 size="sm"
                                 onClick={() => setResetTarget(device)}
-                                aria-label="Reset HWID"
+                                aria-label={`Reset HWID ${device.hardware_id}`}
                                 title="Reset"
                               >
                                 <TrashIcon size={16} strokeWidth={1.5} />

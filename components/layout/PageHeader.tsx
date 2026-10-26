@@ -17,9 +17,12 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
     <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <span className="mb-2 block h-0.5 w-9 rounded-full bg-[linear-gradient(90deg,var(--accent),transparent)]" aria-hidden />
-        <h1 className="flex flex-wrap gap-x-1.5 text-title font-semibold tracking-[-0.01em] text-text">
+        {/* aria-label utuh: kata per kata di dalam span flex tidak punya
+            spasi teks, jadi tanpa ini judul terbaca menyatu ("GenerateKey"). */}
+        <h1 aria-label={title} className="flex flex-wrap gap-x-1.5 text-title font-semibold tracking-[-0.01em] text-text">
           {words.map((word, index) => (
             <motion.span
+              aria-hidden
               key={`${word}-${index}`}
               initial={reduce ? { opacity: 0 } : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}

@@ -52,7 +52,12 @@ export function MobileDrawer({ open, onClose, user }: MobileDrawerProps) {
         if (nodes.length === 0) return;
         const first = nodes[0];
         const last = nodes[nodes.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
+        if (!panelRef.current.contains(document.activeElement as Node | null)) {
+          // Fokus terlepas ke luar drawer (mis. ke body) — tarik kembali,
+          // samakan dengan perilaku Modal.
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
           event.preventDefault();
           last.focus();
         } else if (!event.shiftKey && document.activeElement === last) {

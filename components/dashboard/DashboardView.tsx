@@ -16,6 +16,7 @@ import {
 } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
@@ -104,13 +105,24 @@ export function DashboardView({ role, credit }: { role: Role; credit: number }) 
         }
       />
 
-      {error && (
+      {error && stats && (
         <div className="glass mb-4 rounded-card px-4 py-3 text-body text-banned" role="alert">
           {error}
         </div>
       )}
 
-      {!stats ? (
+      {!stats && !loading ? (
+        // Gagal muat awal: jangan biarkan skeleton berputar selamanya —
+        // beri jalan keluar yang jelas untuk mencoba lagi.
+        <GlassCard>
+          <EmptyState
+            message="Dashboard gagal dimuat"
+            hint={error ?? "Data ringkasan belum tersedia. Coba muat ulang sebentar lagi."}
+            actionLabel="Coba lagi"
+            onAction={load}
+          />
+        </GlassCard>
+      ) : !stats ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-12">
           {Array.from({ length: 4 }).map((_, index) => (
             <SkeletonCard key={index} className="h-full lg:col-span-3" />

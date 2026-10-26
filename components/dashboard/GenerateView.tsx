@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarIcon,
   CheckCircleIcon,
@@ -15,6 +16,7 @@ import {
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { FieldWrap, Textarea } from "@/components/ui/Field";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Select } from "@/components/ui/Select";
 import { CopyButton, copyText } from "@/components/ui/CopyButton";
@@ -139,6 +141,8 @@ function QuickChips({
 
 export function GenerateView({ role, credit }: { role: Role; credit: number }) {
   const { toast } = useToast();
+  const router = useRouter();
+  const resultRef = useRef<HTMLDivElement>(null);
   const isOwner = role === "owner";
   const limits = LIMITS[role];
 
@@ -160,35 +164,45 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [currentCredit, setCurrentCredit] = useState(credit);
 
-  useEffect(() => {
-    async function load() {
-      setMetaLoading(true);
-      try {
-        const [{ data: toolList }, { data: presetList }] = await Promise.all([
-          apiFetch<{ data: ToolType[] }>("/api/tools"),
-          apiFetch<{ data: DurationPreset[] }>("/api/durations"),
-        ]);
-        const activeTools = toolList.filter((tool) => tool.is_active);
-        const activePresets = presetList.filter((preset) => preset.is_active);
+  const loadMeta = useCallback(async () => {
+    setMetaLoading(true);
+    setError(null);
+    try {
+      const [{ data: toolList }, { data: presetList }] = await Promise.all([
+        apiFetch<{ data: ToolType[] }>("/api/tools"),
+        apiFetch<{ data: DurationPreset[] }>("/api/durations"),
+      ]);
+      const activeTools = toolList.filter((tool) => tool.is_active);
+      const activePresets = presetList.filter((preset) => preset.is_active);
 
-        setTools(activeTools);
-        setPresets(activePresets);
+      setTools(activeTools);
+      setPresets(activePresets);
 
-        const firstTool = activeTools[0];
-        if (firstTool) {
-          setToolId(firstTool.id);
-          const firstVersion = (firstTool.tool_versions ?? []).find((version) => version.is_active);
-          if (firstVersion) setVersionId(firstVersion.id);
-        }
-        if (activePresets[0]) setPresetId(activePresets[0].id);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data tool.");
-      } finally {
-        setMetaLoading(false);
+      const firstTool = activeTools[0];
+      if (firstTool) {
+        setToolId(firstTool.id);
+        const firstVersion = (firstTool.tool_versions ?? []).find((version) => version.is_active);
+        if (firstVersion) setVersionId(firstVersion.id);
       }
+      if (activePresets[0]) setPresetId(activePresets[0].id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data tool.");
+    } finally {
+      setMetaLoading(false);
     }
-    void load();
   }, []);
+
+  useEffect(() => {
+    void loadMeta();
+  }, [loadMeta]);
+
+  // Hasil generate muncul di bawah form + ringkasan; gulirkan ke sana
+  // supaya user (terutama di mobile) tidak mengira hanya toast yang muncul.
+  useEffect(() => {
+    if (!result) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    resultRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }, [result]);
 
   const selectedTool = tools.find((tool) => tool.id === toolId) ?? null;
   const versions = useMemo(
@@ -226,8 +240,8 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
     if (!toolId) return setError("Pilih tool dulu.");
     if (!versionId) return setError("Pilih version dulu.");
     if (durationMode === "preset" && !presetId) return setError("Pilih preset durasi dulu.");
-    if (isOwner && durationMode === "custom" && (!Number.isInteger(days) || days < 1)) {
-      return setError("Custom durasi minimal 1 hari.");
+    if (isOwner && durationMode === "custom" && (!Number.isInteger(days) || days < 1 || days > 3650)) {
+      return setError("Custom durasi harus 1–3650 hari.");
     }
 
     const deviceValue = Number(maxDevice);
@@ -270,6 +284,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
       toast(`${response.keys.length} key dibuat.`, "success");
 
       if (response.summary.credit_left !== null) setCurrentCredit(response.summary.credit_left);
+      // Chip credit di header dirender server (layout) — segarkan agar
+      // saldo di header langsung berkurang tanpa menunggu pindah halaman.
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Gagal membuat key.";
       setError(message);
@@ -325,12 +342,24 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                   <Skeleton key={index} className="h-10 w-full" />
                 ))}
               </div>
+            ) : error && tools.length === 0 && presets.length === 0 ? (
+              <EmptyState
+                message="Data generate gagal dimuat"
+                hint={error}
+                icon={<KeyIcon size={20} strokeWidth={1.5} />}
+                actionLabel="Coba lagi"
+                onAction={() => void loadMeta()}
+              />
             ) : (
               <>
                 <section className="flex flex-col gap-3" aria-label="Pilih tool dan version">
                   <SectionHeading step={1} title="Tool & Version" description="Pilih produk dan versi yang akan memakai key ini." />
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <FieldWrap label="Tool Type" htmlFor="gen-tool">
+                  <FieldWrap
+                    label="Tool Type"
+                    htmlFor="gen-tool"
+                    hint={tools.length === 0 ? "Belum ada tool aktif. Buat/aktifkan tool di Tool Management." : undefined}
+                  >
                     <Select
                       id="gen-tool"
                       value={toolId}
@@ -345,14 +374,22 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     />
                   </FieldWrap>
 
-                  <FieldWrap label="Version" htmlFor="gen-version">
+                  <FieldWrap
+                    label="Version"
+                    htmlFor="gen-version"
+                    hint={
+                      selectedTool && versions.length === 0
+                        ? "Tool ini belum punya version aktif."
+                        : undefined
+                    }
+                  >
                     <Select
                       id="gen-version"
                       value={versionId}
                       onChange={setVersionId}
                       placeholder="Pilih version"
                       options={versions.map((version) => ({ value: version.id, label: version.name }))}
-                      disabled={!selectedTool}
+                      disabled={!selectedTool || versions.length === 0}
                     />
                   </FieldWrap>
                   </div>
@@ -394,15 +431,14 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     <span id="gen-duration-label" className="text-label font-medium text-muted">
                       Preset durasi
                     </span>
-                    <div role="radiogroup" aria-labelledby="gen-duration-label" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div role="group" aria-labelledby="gen-duration-label" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {presets.map((preset) => {
                         const selected = preset.id === presetId;
                         return (
                           <button
                             key={preset.id}
                             type="button"
-                            role="radio"
-                            aria-checked={selected}
+                            aria-pressed={selected}
                             onClick={() => setPresetId(preset.id)}
                             className={cn(
                               "rounded-card border p-3 text-left transition-[background-color,border-color,transform] duration-150 active:scale-[0.99]",
@@ -438,7 +474,17 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     )}
                   </div>
                 ) : (
-                  <FieldWrap label="Durasi" htmlFor="gen-duration">
+                  <FieldWrap
+                    label="Durasi"
+                    htmlFor="gen-duration"
+                    hint={
+                      presets.length === 0
+                        ? isOwner
+                          ? "Belum ada preset aktif — pakai mode Custom atau buat preset dulu."
+                          : "Belum ada preset durasi aktif. Hubungi Owner."
+                        : undefined
+                    }
+                  >
                     <Select
                       id="gen-duration"
                       value={presetId}
@@ -612,42 +658,44 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
 
       {/* Hasil */}
       {result && (
-        <GlassCard className="mt-4">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <CheckCircleIcon size={18} strokeWidth={1.5} className="text-active" />
-              <h2 className="text-body font-medium text-text">
-                {result.keys.length} key dibuat
-              </h2>
+        <div ref={resultRef} className="mt-4 scroll-mt-20">
+          <GlassCard>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <CheckCircleIcon size={18} strokeWidth={1.5} className="text-active" />
+                <h2 className="text-body font-medium text-text">
+                  {result.keys.length} key dibuat
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="primary" onClick={copyAll} icon={<CopyIcon size={15} strokeWidth={1.5} />}>
+                  Salin Semua
+                </Button>
+                <Button size="sm" onClick={exportTxt} icon={<DownloadIcon size={16} strokeWidth={1.5} />}>
+                  Export .txt
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="primary" onClick={copyAll} icon={<CopyIcon size={15} strokeWidth={1.5} />}>
-                Salin Semua
-              </Button>
-              <Button size="sm" onClick={exportTxt} icon={<DownloadIcon size={16} strokeWidth={1.5} />}>
-                Export .txt
-              </Button>
-            </div>
-          </div>
 
-          <p className="mb-3 text-label text-muted">
-            {result.summary.tool} · {result.summary.version} ·{" "}
-            {result.summary.duration_days === null ? "Lifetime" : `${result.summary.duration_days} hari`} · max{" "}
-            {result.summary.max_device} device · expired {formatDateTime(result.summary.expired_at)}
-          </p>
+            <p className="mb-3 text-label text-muted">
+              {result.summary.tool} · {result.summary.version} ·{" "}
+              {result.summary.duration_days === null ? "Lifetime" : `${result.summary.duration_days} hari`} · max{" "}
+              {result.summary.max_device} device · expired {formatDateTime(result.summary.expired_at)}
+            </p>
 
-          <ul className="flex flex-col gap-1 rounded-lg border border-glass-border bg-white/[0.03] p-2">
-            {result.keys.map((key) => (
-              <li key={key} className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-white/5">
-                <span className="flex min-w-0 items-center gap-2 break-all font-mono text-label text-text">
-                  <KeyIcon size={14} strokeWidth={1.5} className="text-muted" />
-                  {key}
-                </span>
-                <CopyButton value={key} label="Salin key" toastMessage="Key disalin" />
-              </li>
-            ))}
-          </ul>
-        </GlassCard>
+            <ul className="flex flex-col gap-1 rounded-lg border border-glass-border bg-white/[0.03] p-2">
+              {result.keys.map((key) => (
+                <li key={key} className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-white/5">
+                  <span className="flex min-w-0 items-center gap-2 break-all font-mono text-label text-text">
+                    <KeyIcon size={14} strokeWidth={1.5} className="text-muted" />
+                    {key}
+                  </span>
+                  <CopyButton value={key} label="Salin key" toastMessage="Key disalin" />
+                </li>
+              ))}
+            </ul>
+          </GlassCard>
+        </div>
       )}
     </div>
   );

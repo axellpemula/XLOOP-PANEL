@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EyeIcon, KeyIcon, PlusIcon, RefreshIcon, TrashIcon, UsersIcon, WalletIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -163,18 +163,31 @@ export function ResellerManager() {
     }
   }
 
+  // Guard urutan request detail: membuka reseller B selagi detail A masih
+  // dimuat tidak boleh membuat log A tampil di modal B.
+  const detailSeq = useRef(0);
+
   async function openDetail(reseller: Reseller) {
+    const seq = (detailSeq.current += 1);
     setDetailTarget(reseller);
+    setDetailLogs([]);
     setDetailLoading(true);
     try {
       const result = await apiFetch<{ reseller: Reseller; credit_logs: CreditLog[] }>(
         `/api/resellers/${reseller.id}`
       );
+      if (seq !== detailSeq.current) return;
+      // Pakai data segar dari endpoint detail (credit/key_count terbaru),
+      // bukan snapshot baris tabel yang bisa sudah basi. Functional update:
+      // kalau user sudah menutup modal selagi request berjalan, respons
+      // yang datang belakangan tidak boleh membuka modalnya lagi.
+      setDetailTarget((prev) => (prev?.id === reseller.id ? result.reseller : prev));
       setDetailLogs(result.credit_logs);
     } catch (error) {
+      if (seq !== detailSeq.current) return;
       toast(error instanceof Error ? error.message : "Gagal memuat detail.", "error");
     } finally {
-      setDetailLoading(false);
+      if (seq === detailSeq.current) setDetailLoading(false);
     }
   }
 
@@ -269,7 +282,7 @@ export function ResellerManager() {
                     </td>
                     <td>
                       <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" onClick={() => openDetail(reseller)} aria-label="Detail reseller" title="Detail">
+                        <Button size="sm" onClick={() => openDetail(reseller)} aria-label={`Detail reseller ${reseller.username}`} title="Detail">
                           <EyeIcon size={16} strokeWidth={1.5} />
                         </Button>
                         <Button
@@ -279,7 +292,7 @@ export function ResellerManager() {
                             setTopupError(null);
                             setTopupForm({ amount: "10", note: "" });
                           }}
-                          aria-label="Topup credit"
+                          aria-label={`Topup credit ${reseller.username}`}
                           title="Topup"
                         >
                           <WalletIcon size={16} strokeWidth={1.5} />
@@ -291,7 +304,7 @@ export function ResellerManager() {
                             setPasswordValue("");
                             setPasswordError(null);
                           }}
-                          aria-label="Reset password"
+                          aria-label={`Reset password ${reseller.username}`}
                           title="Reset password"
                         >
                           <KeyIcon size={16} strokeWidth={1.5} />
@@ -299,7 +312,7 @@ export function ResellerManager() {
                         <Button
                           size="sm"
                           onClick={() => setDeleteTarget(reseller)}
-                          aria-label="Hapus reseller"
+                          aria-label={`Hapus reseller ${reseller.username}`}
                           title="Hapus"
                         >
                           <TrashIcon size={16} strokeWidth={1.5} />
@@ -388,7 +401,11 @@ export function ResellerManager() {
             />
           </FieldWrap>
 
-          {createError && <p className="text-label text-banned">{createError}</p>}
+          {createError && (
+            <p className="text-label text-banned" role="alert">
+              {createError}
+            </p>
+          )}
         </div>
       </Modal>
 
@@ -436,7 +453,11 @@ export function ResellerManager() {
             />
           </FieldWrap>
 
-          {topupError && <p className="text-label text-banned">{topupError}</p>}
+          {topupError && (
+            <p className="text-label text-banned" role="alert">
+              {topupError}
+            </p>
+          )}
         </div>
       </Modal>
 
@@ -472,7 +493,11 @@ export function ResellerManager() {
               placeholder="Password baru"
             />
           </FieldWrap>
-          {passwordError && <p className="text-label text-banned">{passwordError}</p>}
+          {passwordError && (
+            <p className="text-label text-banned" role="alert">
+              {passwordError}
+            </p>
+          )}
         </div>
       </Modal>
 
@@ -491,6 +516,9 @@ export function ResellerManager() {
                 if (detailTarget) {
                   setTopupTarget(detailTarget);
                   setTopupError(null);
+                  // Samakan dengan tombol topup di tabel: jangan warisi
+                  // jumlah/catatan dari sesi topup sebelumnya.
+                  setTopupForm({ amount: "10", note: "" });
                   setDetailTarget(null);
                 }
               }}

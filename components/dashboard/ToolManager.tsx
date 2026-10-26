@@ -27,7 +27,7 @@ import { Switch } from "@/components/ui/Switch";
 import { SimpleBadge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 import { apiFetch } from "@/lib/api/client";
-import { slugify, formatNumber } from "@/lib/utils/format";
+import { slugify, formatDate, formatNumber } from "@/lib/utils/format";
 import type { ToolType, ToolVersion } from "@/lib/utils/types";
 
 interface ToolFormState {
@@ -112,6 +112,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
     }
 
     setSaving(true);
+    let createdTool: ToolType | null = null;
     try {
       let toolId = editing?.id ?? null;
 
@@ -125,6 +126,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
           method: "POST",
           body: JSON.stringify({ name: form.name.trim(), slug, is_active: form.is_active }),
         });
+        createdTool = created.tool;
         toolId = created.tool.id;
       }
 
@@ -139,7 +141,18 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
       setFormOpen(false);
       await load();
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Gagal menyimpan tool.");
+      const message = error instanceof Error ? error.message : "Gagal menyimpan tool.";
+      if (createdTool) {
+        // Tool-nya sudah terlanjur dibuat, payload rahasianya yang gagal.
+        // Alihkan form ke mode edit tool tersebut supaya "Simpan" ulang
+        // memperbarui tool yang sama — bukan membuat duplikat/konflik slug.
+        setEditing(createdTool);
+        setReplaceSecret(true);
+        setFormError(`Tool tersimpan, tetapi payload rahasia gagal disimpan: ${message}`);
+        await load();
+      } else {
+        setFormError(message);
+      }
     } finally {
       setSaving(false);
     }
@@ -226,7 +239,20 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
         method: "PUT",
         body: JSON.stringify({ is_active: nextActive }),
       });
-      await load();
+      // Perbarui lokal saja — load() penuh mengganti seluruh tabel dengan
+      // skeleton, menghilangkan fokus dari tombol yang baru diklik.
+      setTools((prev) =>
+        prev.map((item) =>
+          item.id === tool.id
+            ? {
+                ...item,
+                tool_versions: (item.tool_versions ?? []).map((row) =>
+                  row.id === version.id ? { ...row, is_active: nextActive } : row
+                ),
+              }
+            : item
+        )
+      );
       toast(nextActive ? "Version diaktifkan." : "Version dinonaktifkan.", "success");
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal mengubah status.", "error");
@@ -379,7 +405,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                           <button
                             type="button"
                             onClick={() => setExpanded(isOpen ? null : tool.id)}
-                            aria-label={isOpen ? "Tutup version" : "Lihat version"}
+                            aria-label={isOpen ? `Tutup version ${tool.name}` : `Lihat version ${tool.name}`}
                             aria-expanded={isOpen}
                             className="flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-white/5 hover:text-text"
                           >
@@ -417,10 +443,10 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                         </td>
                         <td>
                           <div className="flex items-center justify-end gap-1">
-                            <Button size="sm" onClick={() => openEdit(tool)} aria-label="Edit tool">
+                            <Button size="sm" onClick={() => openEdit(tool)} aria-label={`Edit tool ${tool.name}`}>
                               <PencilIcon size={16} strokeWidth={1.5} />
                             </Button>
-                            <Button size="sm" onClick={() => setDeleteTarget(tool)} aria-label="Hapus tool">
+                            <Button size="sm" onClick={() => setDeleteTarget(tool)} aria-label={`Hapus tool ${tool.name}`}>
                               <TrashIcon size={16} strokeWidth={1.5} />
                             </Button>
                           </div>
@@ -464,13 +490,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                                       <tr key={version.id}>
                                         <td className="font-mono text-text">{version.name}</td>
                                         <td className="tabular">{formatNumber(version.active_key_count ?? 0)}</td>
-                                        <td className="text-muted">
-                                          {new Date(version.created_at).toLocaleDateString("id-ID", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                          })}
-                                        </td>
+                                        <td className="text-muted">{formatDate(version.created_at)}</td>
                                         <td>
                                           <button
                                             type="button"
@@ -490,14 +510,14 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                                             <Button
                                               size="sm"
                                               onClick={() => openVersionForm(tool, version)}
-                                              aria-label="Edit version"
+                                              aria-label={`Edit version ${version.name} dari ${tool.name}`}
                                             >
                                               <PencilIcon size={16} strokeWidth={1.5} />
                                             </Button>
                                             <Button
                                               size="sm"
                                               onClick={() => setVersionDelete({ tool, version })}
-                                              aria-label="Hapus version"
+                                              aria-label={`Hapus version ${version.name} dari ${tool.name}`}
                                             >
                                               <TrashIcon size={16} strokeWidth={1.5} />
                                             </Button>
@@ -599,7 +619,11 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
             )}
           </FieldWrap>
 
-          {formError && <p className="text-label text-banned">{formError}</p>}
+          {formError && (
+            <p className="text-label text-banned" role="alert">
+              {formError}
+            </p>
+          )}
         </div>
       </Modal>
 
@@ -632,7 +656,11 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
               onChange={(event) => setVersionName(event.target.value)}
             />
           </FieldWrap>
-          {versionError && <p className="text-label text-banned">{versionError}</p>}
+          {versionError && (
+            <p className="text-label text-banned" role="alert">
+              {versionError}
+            </p>
+          )}
         </div>
       </Modal>
 

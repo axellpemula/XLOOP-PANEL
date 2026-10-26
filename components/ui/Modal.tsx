@@ -154,12 +154,12 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   const content = (
     <>
       <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <h2 id={titleId} className="text-base font-semibold text-text">
+        <div className="min-w-0">
+          <h2 id={titleId} className="text-base font-semibold text-text [overflow-wrap:anywhere]">
             {title}
           </h2>
           {description && (
-            <p id={descriptionId} className="mt-1 text-label text-muted">
+            <p id={descriptionId} className="mt-1 text-label text-muted [overflow-wrap:anywhere]">
               {description}
             </p>
           )}

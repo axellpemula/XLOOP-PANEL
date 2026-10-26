@@ -26,6 +26,21 @@ export function formatDate(value: string | null | undefined): string {
   }).format(d);
 }
 
+/** Nilai untuk <input type="date"> (YYYY-MM-DD) menurut tanggal WIB. */
+export function formatDateInputValue(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }).formatToParts(d);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 export function formatDayLabel(value: string): string {
   const d = new Date(value + "T00:00:00+07:00");
   return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short" }).format(d);
