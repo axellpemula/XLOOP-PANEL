@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { SidebarCollapseIcon, SidebarExpandIcon } from "@/components/icons";
-import { MENU } from "./menu";
+import { menuGroups } from "./menu";
 import { RoleBadge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { XloopTile } from "@/components/icons/brand";
 import { cn } from "@/lib/utils/cn";
@@ -20,14 +21,10 @@ interface SidebarProps {
   variant?: "desktop" | "drawer";
 }
 
-function initials(name: string) {
-  return name.slice(0, 2).toUpperCase();
-}
-
 export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant = "desktop" }: SidebarProps) {
   const pathname = usePathname();
   const reduce = useReducedMotion();
-  const items = MENU[user.role];
+  const groups = menuGroups(user.role);
 
   return (
     <div className="flex h-full flex-col">
@@ -43,7 +40,7 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
           onClick={onNavigate}
           className={cn("flex min-w-0 items-center gap-2 rounded-lg px-1", collapsed && "justify-center")}
         >
-          <XloopTile size={26} />
+          <XloopTile size={26} className="shrink-0 drop-shadow-[0_4px_14px_rgba(139,147,255,0.45)]" />
           {!collapsed && <span className="truncate text-body font-semibold tracking-wide text-text">XLOOP</span>}
         </Link>
         {!collapsed && variant === "desktop" && (
@@ -73,58 +70,76 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
         </div>
       )}
 
-      {/* MenuIcon */}
-      <nav className="flex-1 overflow-y-auto scroll-area px-2 py-3">
-        <ul className="flex flex-col gap-1">
-          {items.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
+      {/* Menu berkelompok: Utama / Kelola / Laporan */}
+      <nav className="flex-1 overflow-y-auto scroll-area px-2 py-3" aria-label="Menu panel">
+        {groups.map((group, groupIndex) => (
+          <div key={group.section} className={groupIndex > 0 ? "mt-4" : undefined}>
+            {!collapsed ? (
+              <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted/60">
+                {group.section}
+              </p>
+            ) : (
+              groupIndex > 0 && <div className="mx-3 mb-2 h-px bg-glass-border" aria-hidden />
+            )}
+            <ul className="flex flex-col gap-1">
+              {group.items.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const Icon = item.icon;
 
-            const content = (
-              <Link
-                href={item.href}
-                onClick={onNavigate}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "group relative flex h-10 min-h-10 items-center gap-2.5 rounded-lg px-2.5 text-body transition-colors duration-150",
-                  collapsed && "justify-center px-0",
-                  isActive ? "text-accent" : "text-muted hover:text-text"
-                )}
-              >
-                {isActive && (
-                  <motion.span
-                    layoutId={variant === "drawer" ? "sidebar-pill-drawer" : "sidebar-pill"}
-                    className="absolute inset-0 -z-10 rounded-lg bg-glass-strong"
-                    transition={
-                      reduce ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }
-                    }
-                  />
-                )}
-                {isActive && (
-                  <motion.span
-                    layoutId={variant === "drawer" ? "sidebar-bar-drawer" : "sidebar-bar"}
-                    className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-accent"
-                    transition={
-                      reduce ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }
-                    }
-                  />
-                )}
-                <Icon
-                  size={18}
-                  strokeWidth={1.5}
-                  className="shrink-0 transition-transform duration-150 group-hover:translate-x-0.5"
-                />
-                {!collapsed && <span className="truncate">{item.label}</span>}
-              </Link>
-            );
+                const content = (
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "group relative flex h-10 min-h-10 items-center gap-2.5 rounded-lg px-2.5 text-body transition-colors duration-150",
+                      collapsed && "justify-center px-0",
+                      isActive ? "font-medium text-text" : "text-muted hover:bg-white/[0.04] hover:text-text"
+                    )}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId={variant === "drawer" ? "sidebar-pill-drawer" : "sidebar-pill"}
+                        className="absolute inset-0 -z-10 rounded-lg bg-[linear-gradient(90deg,rgba(139,147,255,0.17),rgba(139,147,255,0.07))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] ring-1 ring-inset ring-accent/20"
+                        transition={
+                          reduce ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }
+                        }
+                      />
+                    )}
+                    {isActive && (
+                      <motion.span
+                        layoutId={variant === "drawer" ? "sidebar-bar-drawer" : "sidebar-bar"}
+                        style={{ y: "-50%" }}
+                        className="absolute left-0 top-1/2 h-5 w-[3px] rounded-full bg-accent shadow-[0_0_10px_rgba(139,147,255,0.65)]"
+                        transition={
+                          reduce ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }
+                        }
+                      />
+                    )}
+                    <Icon
+                      size={18}
+                      strokeWidth={1.5}
+                      className={cn(
+                        "shrink-0 transition-transform duration-150 group-hover:translate-x-0.5",
+                        isActive && "text-accent"
+                      )}
+                    />
+                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {isActive && !collapsed && (
+                      <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+                    )}
+                  </Link>
+                );
 
-            return (
-              <li key={item.href}>
-                {collapsed ? <Tooltip label={item.label}>{content}</Tooltip> : content}
-              </li>
-            );
-          })}
-        </ul>
+                return (
+                  <li key={item.href}>
+                    {collapsed ? <Tooltip label={item.label}>{content}</Tooltip> : content}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
       {/* Kartu user */}
@@ -134,16 +149,15 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
             <Link
               href={user.role === "reseller" ? "/credits" : "/resellers"}
               onClick={onNavigate}
-              className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg border border-glass-border bg-white/[0.06] text-label font-semibold text-text"
+              className="mx-auto block w-fit rounded-lg"
+              aria-label={`Profil ${user.username}`}
             >
-              {initials(user.username)}
+              <Avatar name={user.username} />
             </Link>
           </Tooltip>
         ) : (
           <div className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-glass-border bg-white/[0.06] text-label font-semibold text-text">
-              {initials(user.username)}
-            </span>
+            <Avatar name={user.username} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-body text-text">{user.username}</p>
               <div className="mt-0.5 flex items-center gap-1.5">

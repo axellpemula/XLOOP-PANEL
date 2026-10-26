@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, RefreshIcon, SearchIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -26,6 +26,8 @@ import type {
 interface KeysViewProps {
   role: Role;
   credit: number;
+  /** Diisi command palette lewat query ?search=… */
+  initialSearch?: string;
 }
 
 const STATUS_OPTIONS = [
@@ -43,7 +45,7 @@ const SORT_OPTIONS = [
   { value: "status:asc", label: "Status A–Z" },
 ];
 
-export function KeysView({ role, credit }: KeysViewProps) {
+export function KeysView({ role, credit, initialSearch = "" }: KeysViewProps) {
   const { toast } = useToast();
   const router = useRouter();
   const isOwner = role === "owner";
@@ -54,8 +56,8 @@ export function KeysView({ role, credit }: KeysViewProps) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch.trim());
   const [status, setStatus] = useState("");
   const [toolId, setToolId] = useState("");
   const [versionId, setVersionId] = useState("");
@@ -74,12 +76,26 @@ export function KeysView({ role, credit }: KeysViewProps) {
 
   const perPage = 10;
 
+  // Query dari URL bisa berubah saat halaman sudah terbuka (mis. Ctrl+K
+  // dipakai lagi dari Key List) — sinkronkan ke state pencarian.
+  useEffect(() => {
+    const next = initialSearch.trim();
+    setSearch(next);
+    setDebouncedSearch(next);
+    setPage(1);
+  }, [initialSearch]);
+
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 350);
     return () => window.clearTimeout(timer);
   }, [search]);
 
+  // Nomor urut request: respons lama yang datang belakangan (koneksi lambat,
+  // filter diganti cepat) tidak boleh menimpa hasil filter terbaru.
+  const loadSeq = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = (loadSeq.current += 1);
     setLoading(true);
     try {
       const [sort, order] = sortValue.split(":");
@@ -96,13 +112,15 @@ export function KeysView({ role, credit }: KeysViewProps) {
       if (resellerId && isOwner) params.set("reseller", resellerId);
 
       const result = await apiFetch<Paginated<LicenseKey>>(`/api/keys?${params.toString()}`);
+      if (seq !== loadSeq.current) return;
       setRows(result.data);
       setTotal(result.total);
       setTotalPages(result.totalPages);
     } catch (error) {
+      if (seq !== loadSeq.current) return;
       toast(error instanceof Error ? error.message : "Gagal memuat key.", "error");
     } finally {
-      setLoading(false);
+      if (seq === loadSeq.current) setLoading(false);
     }
   }, [page, perPage, debouncedSearch, status, toolId, versionId, resellerId, sortValue, isOwner, toast]);
 
@@ -295,6 +313,16 @@ export function KeysView({ role, credit }: KeysViewProps) {
         onToggleBan={toggleBan}
         onDelete={setDeleteTarget}
         onCreate={() => router.push("/generate")}
+        filtered={Boolean(search || status || toolId || versionId || resellerId)}
+        onClearFilters={() => {
+          setSearch("");
+          setDebouncedSearch("");
+          setStatus("");
+          setToolId("");
+          setVersionId("");
+          setResellerId("");
+          setPage(1);
+        }}
       />
 
       <Pagination page={page} totalPages={totalPages} total={total} perPage={perPage} onPageChange={setPage} />

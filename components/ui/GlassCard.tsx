@@ -15,6 +15,7 @@ export function GlassCard({
   variant = "glass",
   spotlight = false,
   interactive = false,
+  as: Tag = "div",
   className,
   children,
   onMouseMove,
@@ -34,20 +35,17 @@ export function GlassCard({
     [spotlight, onMouseMove]
   );
 
+  // Prop `as` sebelumnya diterima tapi diabaikan (selalu render <div>).
+  const Element = Tag as "div";
   return (
-    <div
+    <Element
       ref={ref}
+      data-interactive={interactive || undefined}
       onMouseMove={handleMove}
-      className={cn(
-        variant,
-        "rounded-card p-4",
-        spotlight && "spotlight-card",
-        interactive && "cursor-pointer",
-        className
-      )}
+      className={cn(variant, "rounded-card p-4", spotlight && "spotlight-card", interactive && "cursor-pointer", className)}
       {...props}
     >
       {children}
-    </div>
+    </Element>
   );
 }

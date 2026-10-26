@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { DownloadIcon, RefreshIcon } from "@/components/icons";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { DownloadIcon, RefreshIcon, WalletIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
@@ -53,17 +53,23 @@ export function CreditLogView({ role }: { role: Role }) {
     [action, from, to, resellerId, isOwner]
   );
 
+  // Samakan dengan KeysView: respons request lama tidak menimpa filter baru.
+  const loadSeq = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = (loadSeq.current += 1);
     setLoading(true);
     try {
       const result = await apiFetch<Paginated<CreditLog>>(`/api/credits?${buildParams(page).toString()}`);
+      if (seq !== loadSeq.current) return;
       setRows(result.data);
       setTotal(result.total);
       setTotalPages(result.totalPages);
     } catch (error) {
+      if (seq !== loadSeq.current) return;
       toast(error instanceof Error ? error.message : "Gagal memuat credit log.", "error");
     } finally {
-      setLoading(false);
+      if (seq === loadSeq.current) setLoading(false);
     }
   }, [buildParams, page, toast]);
 
@@ -169,13 +175,15 @@ export function CreditLogView({ role }: { role: Role }) {
           />
         )}
 
-        <div className="flex items-center gap-2">
+        {/* flex-wrap: pasangan tanggal tetap rapi di layar sempit,
+            sebelumnya mengoverflow keluar toolbar. */}
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             type="date"
             value={from}
             onChange={(event) => resetFilter(setFrom)(event.target.value)}
             aria-label="Dari tanggal"
-            className="w-[150px] text-label"
+            className="w-[150px] max-w-full text-label"
           />
           <span className="text-label text-muted">s/d</span>
           <Input
@@ -183,7 +191,7 @@ export function CreditLogView({ role }: { role: Role }) {
             value={to}
             onChange={(event) => resetFilter(setTo)(event.target.value)}
             aria-label="Sampai tanggal"
-            className="w-[150px] text-label"
+            className="w-[150px] max-w-full text-label"
           />
         </div>
 
@@ -221,7 +229,15 @@ export function CreditLogView({ role }: { role: Role }) {
               {!loading && rows.length === 0 && (
                 <tr>
                   <td colSpan={isOwner ? 6 : 5}>
-                    <EmptyState message="Belum ada transaksi credit" />
+                    <EmptyState
+                      message={action || from || to || resellerId ? "Tidak ada transaksi yang cocok" : "Belum ada transaksi credit"}
+                      hint={
+                        action || from || to || resellerId
+                          ? "Coba longgarkan filter aksi, tanggal, atau resellernya."
+                          : "Topup dan pemakaian credit untuk generate key akan tercatat di sini."
+                      }
+                      icon={<WalletIcon size={20} strokeWidth={1.5} />}
+                    />
                   </td>
                 </tr>
               )}

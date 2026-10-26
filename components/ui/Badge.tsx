@@ -3,9 +3,22 @@ import { STATUS_DOT, STATUS_TEXT } from "@/lib/utils/status";
 import { STATUS_LABEL } from "@/lib/utils/constants";
 import type { KeyStatus, Role } from "@/lib/utils/types";
 
+const STATUS_SURFACE: Record<KeyStatus, string> = {
+  active: "border-active/25 bg-active-soft",
+  expired: "border-expired/25 bg-expired-soft",
+  banned: "border-banned/25 bg-banned-soft",
+};
+
 export function StatusBadge({ status, className }: { status: KeyStatus; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-label", STATUS_TEXT[status], className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-label font-medium",
+        STATUS_SURFACE[status],
+        STATUS_TEXT[status],
+        className
+      )}
+    >
       <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[status])} aria-hidden />
       {STATUS_LABEL[status]}
     </span>
@@ -16,8 +29,8 @@ export function RoleBadge({ role, className }: { role: Role; className?: string 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-glass-border px-2 py-0.5 text-label",
-        role === "owner" ? "text-accent" : "text-muted",
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-label",
+        role === "owner" ? "border-accent/25 bg-accent-soft text-accent" : "border-glass-border text-muted",
         className
       )}
     >
@@ -38,19 +51,19 @@ export function SimpleBadge({
 }) {
   const toneClass =
     tone === "accent"
-      ? "text-accent"
+      ? "border-accent/25 bg-accent-soft text-accent"
       : tone === "active"
-        ? "text-active"
+        ? "border-active/25 bg-active-soft text-active"
         : tone === "banned"
-          ? "text-banned"
+          ? "border-banned/25 bg-banned-soft text-banned"
           : tone === "expired"
-            ? "text-expired"
-            : "text-muted";
+            ? "border-expired/25 bg-expired-soft text-expired"
+            : "border-glass-border text-muted";
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-glass-border px-2 py-0.5 text-label",
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-label",
         toneClass,
         className
       )}

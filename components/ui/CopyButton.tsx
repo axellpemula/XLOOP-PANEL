@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, CopyIcon } from "@/components/icons";
 import { cn } from "@/lib/utils/cn";
@@ -19,15 +19,21 @@ export async function copyText(value: string): Promise<boolean> {
     await navigator.clipboard.writeText(value);
     return true;
   } catch {
+    // Fallback untuk konteks non-secure (navigator.clipboard tidak tersedia).
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     try {
       const el = document.createElement("textarea");
       el.value = value;
+      el.readOnly = true;
       el.style.position = "fixed";
       el.style.opacity = "0";
       document.body.appendChild(el);
       el.select();
       const done = document.execCommand("copy");
       document.body.removeChild(el);
+      // select() mencuri fokus ke textarea sementara; kembalikan ke pemicu
+      // supaya posisi keyboard user tidak hilang ke <body>.
+      if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus?.();
       return done;
     } catch {
       return false;
@@ -40,6 +46,13 @@ export function CopyButton({ value, label, toastMessage = "Disalin", className, 
   const [copied, setCopied] = useState(false);
   const timer = useRef<number | null>(null);
   const { toast } = useToast();
+
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    },
+    []
+  );
 
   async function handleCopy(event: React.MouseEvent) {
     event.stopPropagation();

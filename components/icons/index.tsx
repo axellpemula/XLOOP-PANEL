@@ -315,3 +315,95 @@ export const ChevronRightIcon: IconComponent = (props) => (
     <path d="M9.6 6.6 15 12l-5.4 5.4" />
   </Icon>
 );
+
+export const TrendUpIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M4.6 18.6 10 12.8l3.2 3.1 5.6-6.4" />
+    <path d="M14.6 9.4h4.3v4.3" />
+  </Icon>
+);
+
+export const TrendDownIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M4.6 5.8 10 11.4l3.2-3.1 5.6 6.4" />
+    <path d="M14.6 14.8h4.3v-4.3" />
+  </Icon>
+);
+
+export const MinusIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M5.4 12h13.2" />
+  </Icon>
+);
+
+export const ArrowUpRightIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M7.2 16.8 16.8 7.2" />
+    <path d="M9.4 7.2h7.4v7.4" />
+  </Icon>
+);
+
+export const CalendarIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <rect x="3.8" y="5.2" width="16.4" height="15.2" rx="2.6" />
+    <path d="M3.8 9.8h16.4" />
+    <path d="M7.6 3.4v3.4" />
+    <path d="M16.4 3.4v3.4" />
+    <circle cx="8.4" cy="14" r="0.95" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="14" r="0.95" fill="currentColor" stroke="none" />
+  </Icon>
+);
+
+export const DeviceIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <rect x="3.6" y="4.6" width="13.2" height="10.2" rx="2.2" />
+    <rect x="16.2" y="9.6" width="4.6" height="9.4" rx="1.8" />
+    <path d="M7.2 18.8h5.2" />
+    <path d="M9.8 14.8v4" />
+  </Icon>
+);
+
+export const ShieldIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M12 3.4 5.2 5.8v5.5c0 4.2 2.7 7.4 6.8 9.3 4.1-1.9 6.8-5.1 6.8-9.3V5.8L12 3.4Z" />
+    <path d="M9.2 11.8 11.3 14l3.7-4.2" />
+  </Icon>
+);
+
+export const ZapIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M12.8 3.2 5.6 13h4.7l-1 7.8 7.3-10h-4.8l1-7.6Z" />
+  </Icon>
+);
+
+export const ChartIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M4.6 4.4v15.4h15" />
+    <path d="M8.4 16.4v-4.8" />
+    <path d="M12.4 16.4V8.6" />
+    <path d="M16.4 16.4v-7" />
+  </Icon>
+);
+
+export const EyeOffIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M4.8 4.8l14.4 14.4" />
+    <path d="M10.6 6.7A8.7 8.7 0 0 1 12 6.5c5.5 0 9.1 5.5 9.1 5.5a17 17 0 0 1-2.9 3.2" />
+    <path d="M6.2 9A16.5 16.5 0 0 0 2.9 12s3.6 5.5 9.1 5.5c1.2 0 2.3-.3 3.3-.7" />
+    <path d="M9.9 10a2.7 2.7 0 0 0 4.1 3.3" />
+  </Icon>
+);
+
+export const CommandIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M9 9V6.2A1.9 1.9 0 1 0 7.1 8c0 .6.4 1 .9 1h1Zm0 6v2.8A1.9 1.9 0 1 1 7.1 16c0-.6.4-1 .9-1h1Zm6 0v2.8A1.9 1.9 0 1 0 16.9 16c0-.6-.4-1-.9-1h-1Zm0-6V6.2A1.9 1.9 0 1 1 16.9 8c0 .6-.4 1-.9 1h-1Z" />
+    <rect x="9" y="9" width="6" height="6" />
+  </Icon>
+);
+
+export const CrownIcon: IconComponent = (props) => (
+  <Icon {...props}>
+    <path d="M4 17.8 5 8.6l4.4 3L12 6l2.6 5.6 4.4-3 1 9.2H4Z" />
+    <path d="M5.2 20.4h13.6" />
+  </Icon>
+);

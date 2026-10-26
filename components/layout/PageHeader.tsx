@@ -16,7 +16,8 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="flex flex-wrap gap-x-1.5 text-title font-semibold text-text">
+        <span className="mb-2 block h-0.5 w-9 rounded-full bg-[linear-gradient(90deg,var(--accent),transparent)]" aria-hidden />
+        <h1 className="flex flex-wrap gap-x-1.5 text-title font-semibold tracking-[-0.01em] text-text">
           {words.map((word, index) => (
             <motion.span
               key={`${word}-${index}`}

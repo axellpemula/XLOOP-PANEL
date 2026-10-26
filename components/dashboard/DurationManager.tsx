@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { PencilIcon, PlusIcon, TimerIcon, TrashIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
@@ -37,6 +37,7 @@ export function DurationManager() {
 
   const [deleteTarget, setDeleteTarget] = useState<DurationPreset | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -119,15 +120,22 @@ export function DurationManager() {
   }
 
   async function toggle(item: DurationPreset) {
+    const nextActive = !item.is_active;
+    // Klik ganda mengirim payload sama dua kali tapi state lokal terbalik
+    // dua kali → tampilan berlawanan dengan server. Kunci per baris.
+    if (togglingId === item.id) return;
+    setTogglingId(item.id);
     try {
       await apiFetch(`/api/durations/${item.id}`, {
         method: "PUT",
-        body: JSON.stringify({ is_active: !item.is_active }),
+        body: JSON.stringify({ is_active: nextActive }),
       });
-      setItems((prev) => prev.map((row) => (row.id === item.id ? { ...row, is_active: !row.is_active } : row)));
-      toast(item.is_active ? "Durasi dinonaktifkan." : "Durasi diaktifkan.", "success");
+      setItems((prev) => prev.map((row) => (row.id === item.id ? { ...row, is_active: nextActive } : row)));
+      toast(nextActive ? "Durasi diaktifkan." : "Durasi dinonaktifkan.", "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Gagal mengubah status.", "error");
+    } finally {
+      setTogglingId(null);
     }
   }
 
@@ -186,7 +194,14 @@ export function DurationManager() {
               {!loading && items.length === 0 && (
                 <tr>
                   <td colSpan={5}>
-                    <EmptyState message="Belum ada preset durasi" actionLabel="Tambah Durasi" onAction={openCreate} />
+                    <EmptyState
+                      message="Belum ada preset durasi"
+                      hint="Preset menentukan masa aktif key dan harga credit untuk reseller."
+                      icon={<TimerIcon size={20} strokeWidth={1.5} />}
+                      steps={["Tentukan hari", "Atur harga credit", "Aktifkan preset"]}
+                      actionLabel="Tambah Durasi"
+                      onAction={openCreate}
+                    />
                   </td>
                 </tr>
               )}
@@ -198,7 +213,14 @@ export function DurationManager() {
                     <td className="tabular">{formatNumber(item.days)} hari</td>
                     <td className="tabular">{formatNumber(item.credit_cost)} credit</td>
                     <td>
-                      <button type="button" onClick={() => toggle(item)} className="cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={() => toggle(item)}
+                        disabled={togglingId === item.id}
+                        className="cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                        aria-label={`${item.is_active ? "Nonaktifkan" : "Aktifkan"} durasi ${item.name}`}
+                        title={item.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
+                      >
                         <SimpleBadge tone={item.is_active ? "active" : "muted"}>
                           {item.is_active ? "Aktif" : "Nonaktif"}
                         </SimpleBadge>
@@ -226,6 +248,8 @@ export function DurationManager() {
         onClose={() => setOpen(false)}
         title={editing ? "Edit Durasi" : "Tambah Durasi"}
         description="Reseller hanya bisa memakai preset yang aktif."
+        busy={saving}
+        onSubmit={submit}
         footer={
           <>
             <Button onClick={() => setOpen(false)} disabled={saving}>

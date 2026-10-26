@@ -19,10 +19,16 @@ export function SkeletonRows({ rows = 5, cols = 4 }: { rows?: number; cols?: num
 }
 
 export function SkeletonCard({ className }: { className?: string }) {
+  // Siluetnya meniru StatCard asli (label + tile ikon + angka + hint) supaya
+  // layout tidak meloncat saat data selesai dimuat.
   return (
-    <div className={cn("glass rounded-card p-4", className)}>
-      <Skeleton className="h-3 w-20" />
-      <Skeleton className="mt-3 h-7 w-16" />
+    <div className={cn("glass flex flex-col gap-3 rounded-card p-4", className)}>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-9 w-9 rounded-xl" />
+      </div>
+      <Skeleton className="h-8 w-20" />
+      <Skeleton className="h-3 w-28" />
     </div>
   );
 }
