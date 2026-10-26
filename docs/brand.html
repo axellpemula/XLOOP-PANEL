@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>XLOOP PANEL — Brand &amp; Icon System</title>
+<style>
+  :root {
+    --bg:#141311; --text:#f1eee9; --muted:#a8a299; --accent:#8b93ff; --ink:#12131f;
+    --border:rgba(255,255,255,.1); --active:#6fae82; --expired:#c9a35b; --banned:#c9645c;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:40px 28px 56px; background:var(--bg); color:var(--text);
+    font:14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
+  body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(600px circle at 12% 6%, rgba(139,147,255,.11), transparent 60%),
+      radial-gradient(700px circle at 88% 92%, rgba(86,110,150,.18), transparent 60%), #141311; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  .mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+  h1 { font-size:26px; line-height:34px; margin:0; font-weight:600; letter-spacing:-.01em; }
+  h1 span { display:block; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:500; margin-top:6px; }
+  h2 { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:500;
+    margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  .head { display:flex; align-items:center; gap:18px; }
+  .card { border:1px solid var(--border); background:rgba(255,255,255,.05); box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    border-radius:16px; padding:20px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+  .lockups { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .surface-dark { background:#1b1a18; border:1px solid var(--border); border-radius:16px; padding:28px; display:flex;
+    align-items:center; justify-content:center; gap:14px; }
+  .surface-light { background:#f4f2ee; border-radius:16px; padding:28px; display:flex; align-items:center;
+    justify-content:center; gap:14px; }
+  .locktext { font-size:17px; font-weight:600; letter-spacing:1.2px; }
+  .locktext small { display:block; font-size:9px; letter-spacing:2.6px; font-weight:400; margin-top:2px; }
+  .sizes-row { display:flex; gap:20px; align-items:flex-end; flex-wrap:wrap; }
+  .size-item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .size-item em { font-style:normal; font-size:11px; color:var(--muted); }
+  .icons { display:grid; grid-template-columns:repeat(auto-fill, minmax(132px, 1fr)); gap:10px; }
+  .ic { border:1px solid var(--border); background:rgba(255,255,255,.035); border-radius:12px; padding:12px 10px;
+    display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+  .ic b { font-size:11px; font-weight:500; color:var(--text); }
+  .ic .mono { font-size:9px; color:var(--muted); opacity:.75; }
+  .ic .sizes { display:flex; gap:8px; align-items:center; color:var(--muted); margin-top:2px; }
+  .sw { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--border); border-radius:12px; padding:12px;
+    background:rgba(255,255,255,.035); }
+  .chip { width:38px; height:38px; border-radius:10px; border:1px solid var(--border); flex:none; }
+  .sw b { font-size:11px; display:block; color:var(--text); }
+  .sw .hex { font-size:10px; color:var(--muted); }
+  .sw p { margin:4px 0 0; font-size:11px; color:var(--muted); }
+  .swatches { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:10px; }
+  .rules { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .rules ul { margin:0; padding-left:18px; color:var(--muted); font-size:12.5px; }
+  .rules li { margin-bottom:6px; }
+  .rules h3 { margin:0 0 8px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+  .do h3 { color:var(--active); }
+  .dont h3 { color:var(--banned); }
+  footer { margin-top:36px; padding-top:14px; border-top:1px solid var(--border); color:var(--muted); font-size:11.5px; }
+</style></head>
+<body><div class="wrap">
+
+  <div class="head">
+    <svg width="66" height="66" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#8b93ff"/><g transform="translate(4 4)" fill="none" stroke="#12131f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></g></svg>
+    <div>
+      <h1>XLOOP PANEL<span>Brand &amp; icon system</span></h1>
+    </div>
+  </div>
+
+  <h2>Lockup</h2>
+  <div class="lockups">
+    <div class="surface-dark">
+      <svg width="40" height="40" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#8b93ff"/><g transform="translate(4 4)" fill="none" stroke="#12131f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></g></svg>
+      <div class="locktext">XLOOP<small>KEY PANEL</small></div>
+    </div>
+    <div class="surface-light">
+      <svg width="40" height="40" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#8b93ff"/><g transform="translate(4 4)" fill="none" stroke="#12131f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></g></svg>
+      <div class="locktext" style="color:#141311">XLOOP<small style="color:#6b6760">KEY PANEL</small></div>
+    </div>
+  </div>
+
+  <h2>Mark</h2>
+  <div class="card">
+    <div class="sizes-row" style="color:var(--accent)">
+      <div class="size-item"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></svg><em>64</em></div>
+      <div class="size-item"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></svg><em>48</em></div>
+      <div class="size-item"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></svg><em>32</em></div>
+      <div class="size-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></svg><em>24</em></div>
+      <div class="size-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></svg><em>16</em></div>
+      <div style="width:1px;height:56px;background:var(--border);margin:0 8px"></div>
+      <div class="size-item" style="color:var(--text)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></svg><em>mono</em></div>
+      <div class="size-item"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#8b93ff"/><g transform="translate(4 4)" fill="none" stroke="#12131f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></g></svg><em>tile</em></div>
+      <div class="size-item"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#f1eee9"/><g transform="translate(4 4)" fill="none" stroke="#141311" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 6.2c0 3.1 6.2 3.1 6.2 6.2s-6.2 3.1-6.2 6.2"/><path d="M18.2 6.2c0 3.1-6.2 3.1-6.2 6.2s6.2 3.1 6.2 6.2"/></g></svg><em>invert</em></div>
+    </div>
+  </div>
+
+  <h2>Ikon aplikasi (31) — kanvas 24, stroke 1.5</h2>
+  <div class="icons">
+    <div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="7" rx="2.4" /> <rect x="3.4" y="13.6" width="7.6" height="7" rx="2.4" /> <rect x="14" y="13.6" width="6.6" height="7" rx="2.4" /></svg>
+  <b>Dashboard</b><span class="mono">DashboardIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="7" rx="2.4" /> <rect x="3.4" y="13.6" width="7.6" height="7" rx="2.4" /> <rect x="14" y="13.6" width="6.6" height="7" rx="2.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="7" rx="2.4" /> <rect x="3.4" y="13.6" width="7.6" height="7" rx="2.4" /> <rect x="14" y="13.6" width="6.6" height="7" rx="2.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4 20.2 7.8v8.4L12 20.6 3.8 16.2V7.8L12 3.4Z" /> <path d="M3.9 7.9 12 12.2l8.1-4.3" /> <path d="M12 12.2v8.4" /></svg>
+  <b>Tool Management</b><span class="mono">ToolsIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4 20.2 7.8v8.4L12 20.6 3.8 16.2V7.8L12 3.4Z" /> <path d="M3.9 7.9 12 12.2l8.1-4.3" /> <path d="M12 12.2v8.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4 20.2 7.8v8.4L12 20.6 3.8 16.2V7.8L12 3.4Z" /> <path d="M3.9 7.9 12 12.2l8.1-4.3" /> <path d="M12 12.2v8.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.6" r="7.4" /> <path d="M12 9.9v3.9l2.5 1.5" /> <path d="M9.6 2.6h4.8" /> <path d="M12 2.6v2.4" /></svg>
+  <b>Duration Setting</b><span class="mono">TimerIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.6" r="7.4" /> <path d="M12 9.9v3.9l2.5 1.5" /> <path d="M9.6 2.6h4.8" /> <path d="M12 2.6v2.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.6" r="7.4" /> <path d="M12 9.9v3.9l2.5 1.5" /> <path d="M9.6 2.6h4.8" /> <path d="M12 2.6v2.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.3" cy="12" r="4.2" /> <path d="M12.5 12h7.9" /> <path d="M17.1 12v3.6" /> <path d="M14.3 12v2.6" /></svg>
+  <b>Key List</b><span class="mono">KeyIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.3" cy="12" r="4.2" /> <path d="M12.5 12h7.9" /> <path d="M17.1 12v3.6" /> <path d="M14.3 12v2.6" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.3" cy="12" r="4.2" /> <path d="M12.5 12h7.9" /> <path d="M17.1 12v3.6" /> <path d="M14.3 12v2.6" /></svg>
+  </div>
+</div><div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.4" /> <path d="M12 8.2v7.6" /> <path d="M8.2 12h7.6" /></svg>
+  <b>Generate Key</b><span class="mono">PlusIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.4" /> <path d="M12 8.2v7.6" /> <path d="M8.2 12h7.6" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.4" /> <path d="M12 8.2v7.6" /> <path d="M8.2 12h7.6" /></svg>
+  </div>
+</div><div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.6" r="3.3" /> <path d="M2.9 19.4c0-3.1 2.8-5.1 6.3-5.1s6.3 2 6.3 5.1" /> <circle cx="17.6" cy="9.9" r="2.4" /> <path d="M15.9 14.8c3 .3 5.2 2 5.2 4.6" /></svg>
+  <b>Reseller</b><span class="mono">UsersIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.6" r="3.3" /> <path d="M2.9 19.4c0-3.1 2.8-5.1 6.3-5.1s6.3 2 6.3 5.1" /> <circle cx="17.6" cy="9.9" r="2.4" /> <path d="M15.9 14.8c3 .3 5.2 2 5.2 4.6" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.6" r="3.3" /> <path d="M2.9 19.4c0-3.1 2.8-5.1 6.3-5.1s6.3 2 6.3 5.1" /> <circle cx="17.6" cy="9.9" r="2.4" /> <path d="M15.9 14.8c3 .3 5.2 2 5.2 4.6" /></svg>
+  </div>
+</div><div class="ic" data-group="Navigasi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.4" width="14" height="17.2" rx="2.8" /> <path d="M8.4 8.6h7.2" /> <path d="M8.4 12h7.2" /> <path d="M8.4 15.4h4.4" /></svg>
+  <b>Credit Log</b><span class="mono">ScrollTextIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.4" width="14" height="17.2" rx="2.8" /> <path d="M8.4 8.6h7.2" /> <path d="M8.4 12h7.2" /> <path d="M8.4 15.4h4.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.4" width="14" height="17.2" rx="2.8" /> <path d="M8.4 8.6h7.2" /> <path d="M8.4 12h7.2" /> <path d="M8.4 15.4h4.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Shell">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 7.6h14.8" /> <path d="M4.6 12h14.8" /> <path d="M4.6 16.4h9.4" /></svg>
+  <b>Menu</b><span class="mono">MenuIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 7.6h14.8" /> <path d="M4.6 12h14.8" /> <path d="M4.6 16.4h9.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 7.6h14.8" /> <path d="M4.6 12h14.8" /> <path d="M4.6 16.4h9.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Shell">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 6.6 17.4 17.4" /> <path d="M17.4 6.6 6.6 17.4" /></svg>
+  <b>Tutup</b><span class="mono">CloseIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 6.6 17.4 17.4" /> <path d="M17.4 6.6 6.6 17.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 6.6 17.4 17.4" /> <path d="M17.4 6.6 6.6 17.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Shell">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.6 4.8H6.4a1.8 1.8 0 0 0-1.8 1.8v10.8a1.8 1.8 0 0 0 1.8 1.8h7.2" /> <path d="M18.6 12h-8.4" /> <path d="M15.2 8.6 18.6 12l-3.4 3.4" /></svg>
+  <b>Logout</b><span class="mono">LogoutIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.6 4.8H6.4a1.8 1.8 0 0 0-1.8 1.8v10.8a1.8 1.8 0 0 0 1.8 1.8h7.2" /> <path d="M18.6 12h-8.4" /> <path d="M15.2 8.6 18.6 12l-3.4 3.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.6 4.8H6.4a1.8 1.8 0 0 0-1.8 1.8v10.8a1.8 1.8 0 0 0 1.8 1.8h7.2" /> <path d="M18.6 12h-8.4" /> <path d="M15.2 8.6 18.6 12l-3.4 3.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Shell">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.4" width="17.2" height="15.2" rx="2.8" /> <path d="M9.6 4.4v15.2" /> <path d="M16.6 9.6 13.8 12l2.8 2.4" /></svg>
+  <b>Collapse sidebar</b><span class="mono">SidebarCollapseIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.4" width="17.2" height="15.2" rx="2.8" /> <path d="M9.6 4.4v15.2" /> <path d="M16.6 9.6 13.8 12l2.8 2.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.4" width="17.2" height="15.2" rx="2.8" /> <path d="M9.6 4.4v15.2" /> <path d="M16.6 9.6 13.8 12l2.8 2.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Shell">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.4" width="17.2" height="15.2" rx="2.8" /> <path d="M9.6 4.4v15.2" /> <path d="M13.8 9.6 16.6 12l-2.8 2.4" /></svg>
+  <b>Expand sidebar</b><span class="mono">SidebarExpandIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.4" width="17.2" height="15.2" rx="2.8" /> <path d="M9.6 4.4v15.2" /> <path d="M13.8 9.6 16.6 12l-2.8 2.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.4" width="17.2" height="15.2" rx="2.8" /> <path d="M9.6 4.4v15.2" /> <path d="M13.8 9.6 16.6 12l-2.8 2.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Shell">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14" /> <path d="M13.4 6.8 18.6 12l-5.2 5.2" /></svg>
+  <b>Panah kanan</b><span class="mono">ArrowRightIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14" /> <path d="M13.4 6.8 18.6 12l-5.2 5.2" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14" /> <path d="M13.4 6.8 18.6 12l-5.2 5.2" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="8.6" width="11" height="11" rx="2.6" /> <path d="M15.4 5.2H6.6A1.6 1.6 0 0 0 5 6.8v8.8" /></svg>
+  <b>Copy</b><span class="mono">CopyIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="8.6" width="11" height="11" rx="2.6" /> <path d="M15.4 5.2H6.6A1.6 1.6 0 0 0 5 6.8v8.8" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="8.6" width="11" height="11" rx="2.6" /> <path d="M15.4 5.2H6.6A1.6 1.6 0 0 0 5 6.8v8.8" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.4 12.6 9.8 17 18.6 7.4" /></svg>
+  <b>Check</b><span class="mono">CheckIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.4 12.6 9.8 17 18.6 7.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.4 12.6 9.8 17 18.6 7.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M8.4 12.2 11.2 15l4.6-5.6" /></svg>
+  <b>Sukses</b><span class="mono">CheckCircleIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M8.4 12.2 11.2 15l4.6-5.6" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M8.4 12.2 11.2 15l4.6-5.6" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M12 7.8v4.9" /> <circle cx="12" cy="16" r="0.95" fill="currentColor" stroke="none" /></svg>
+  <b>Error</b><span class="mono">AlertIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M12 7.8v4.9" /> <circle cx="12" cy="16" r="0.95" fill="currentColor" stroke="none" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M12 7.8v4.9" /> <circle cx="12" cy="16" r="0.95" fill="currentColor" stroke="none" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M12 11.2v5" /> <circle cx="12" cy="7.9" r="0.95" fill="currentColor" stroke="none" /></svg>
+  <b>Info</b><span class="mono">InfoIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M12 11.2v5" /> <circle cx="12" cy="7.9" r="0.95" fill="currentColor" stroke="none" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /> <path d="M12 11.2v5" /> <circle cx="12" cy="7.9" r="0.95" fill="currentColor" stroke="none" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.4" /> <path d="M15.6 15.6 20.4 20.4" /></svg>
+  <b>Search</b><span class="mono">SearchIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.4" /> <path d="M15.6 15.6 20.4 20.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.4" /> <path d="M15.6 15.6 20.4 20.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 19.2l.9-3.7L15.4 5.8a2.1 2.1 0 0 1 3 3L8.5 18.3l-3.7.9Z" /> <path d="M14.2 7.1 16.9 9.8" /></svg>
+  <b>Edit</b><span class="mono">PencilIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 19.2l.9-3.7L15.4 5.8a2.1 2.1 0 0 1 3 3L8.5 18.3l-3.7.9Z" /> <path d="M14.2 7.1 16.9 9.8" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 19.2l.9-3.7L15.4 5.8a2.1 2.1 0 0 1 3 3L8.5 18.3l-3.7.9Z" /> <path d="M14.2 7.1 16.9 9.8" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 7.2h14.8" /> <path d="M9.7 4.6h4.6" /> <path d="M6.8 7.2l.8 11.1a1.6 1.6 0 0 0 1.6 1.5h5.6a1.6 1.6 0 0 0 1.6-1.5l.8-11.1" /> <path d="M10.4 11v5.2" /> <path d="M13.6 11v5.2" /></svg>
+  <b>Hapus</b><span class="mono">TrashIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 7.2h14.8" /> <path d="M9.7 4.6h4.6" /> <path d="M6.8 7.2l.8 11.1a1.6 1.6 0 0 0 1.6 1.5h5.6a1.6 1.6 0 0 0 1.6-1.5l.8-11.1" /> <path d="M10.4 11v5.2" /> <path d="M13.6 11v5.2" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 7.2h14.8" /> <path d="M9.7 4.6h4.6" /> <path d="M6.8 7.2l.8 11.1a1.6 1.6 0 0 0 1.6 1.5h5.6a1.6 1.6 0 0 0 1.6-1.5l.8-11.1" /> <path d="M10.4 11v5.2" /> <path d="M13.6 11v5.2" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.6" /> <path d="M6.7 17.3 17.3 6.7" /></svg>
+  <b>Ban</b><span class="mono">BanIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.6" /> <path d="M6.7 17.3 17.3 6.7" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.6" /> <path d="M6.7 17.3 17.3 6.7" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 12.6a7.6 7.6 0 1 1-2.5-6.2" /> <path d="M16.8 2.8v4h-4" /></svg>
+  <b>Reset HWID</b><span class="mono">ResetIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 12.6a7.6 7.6 0 1 1-2.5-6.2" /> <path d="M16.8 2.8v4h-4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 12.6a7.6 7.6 0 1 1-2.5-6.2" /> <path d="M16.8 2.8v4h-4" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 11.6a8 8 0 0 0-13.6-5l-2 2" /> <path d="M3.8 12.4a8 8 0 0 0 13.6 5l2-2" /> <path d="M4.4 3.9v4.7h4.7" /> <path d="M19.6 20.1v-4.7h-4.7" /></svg>
+  <b>Muat ulang</b><span class="mono">RefreshIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 11.6a8 8 0 0 0-13.6-5l-2 2" /> <path d="M3.8 12.4a8 8 0 0 0 13.6 5l2-2" /> <path d="M4.4 3.9v4.7h4.7" /> <path d="M19.6 20.1v-4.7h-4.7" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 11.6a8 8 0 0 0-13.6-5l-2 2" /> <path d="M3.8 12.4a8 8 0 0 0 13.6 5l2-2" /> <path d="M4.4 3.9v4.7h4.7" /> <path d="M19.6 20.1v-4.7h-4.7" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v11" /> <path d="M7.7 10.4 12 14.7l4.3-4.3" /> <path d="M4.6 16.8v1.2a2 2 0 0 0 2 2h10.8a2 2 0 0 0 2-2v-1.2" /></svg>
+  <b>Export</b><span class="mono">DownloadIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v11" /> <path d="M7.7 10.4 12 14.7l4.3-4.3" /> <path d="M4.6 16.8v1.2a2 2 0 0 0 2 2h10.8a2 2 0 0 0 2-2v-1.2" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v11" /> <path d="M7.7 10.4 12 14.7l4.3-4.3" /> <path d="M4.6 16.8v1.2a2 2 0 0 0 2 2h10.8a2 2 0 0 0 2-2v-1.2" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.9 12S6.5 6.3 12 6.3 21.1 12 21.1 12 17.5 17.7 12 17.7 2.9 12 2.9 12Z" /> <circle cx="12" cy="12" r="2.7" /></svg>
+  <b>Detail</b><span class="mono">EyeIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.9 12S6.5 6.3 12 6.3 21.1 12 21.1 12 17.5 17.7 12 17.7 2.9 12 2.9 12Z" /> <circle cx="12" cy="12" r="2.7" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.9 12S6.5 6.3 12 6.3 21.1 12 21.1 12 17.5 17.7 12 17.7 2.9 12 2.9 12Z" /> <circle cx="12" cy="12" r="2.7" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.4" y="10.4" width="13.2" height="9.2" rx="2.6" /> <path d="M8.7 10.4V8.1a3.3 3.3 0 0 1 6.6 0v2.3" /></svg>
+  <b>Rahasia tersimpan</b><span class="mono">LockIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.4" y="10.4" width="13.2" height="9.2" rx="2.6" /> <path d="M8.7 10.4V8.1a3.3 3.3 0 0 1 6.6 0v2.3" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.4" y="10.4" width="13.2" height="9.2" rx="2.6" /> <path d="M8.7 10.4V8.1a3.3 3.3 0 0 1 6.6 0v2.3" /></svg>
+  </div>
+</div><div class="ic" data-group="Aksi">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="6.2" width="17.2" height="12.6" rx="3.2" /> <path d="M14.6 12.5h6" /> <circle cx="17.2" cy="12.5" r="0.95" fill="currentColor" stroke="none" /></svg>
+  <b>Topup credit</b><span class="mono">WalletIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="6.2" width="17.2" height="12.6" rx="3.2" /> <path d="M14.6 12.5h6" /> <circle cx="17.2" cy="12.5" r="0.95" fill="currentColor" stroke="none" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="6.2" width="17.2" height="12.6" rx="3.2" /> <path d="M14.6 12.5h6" /> <circle cx="17.2" cy="12.5" r="0.95" fill="currentColor" stroke="none" /></svg>
+  </div>
+</div><div class="ic" data-group="Feedback">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10 12 15l5-5" /></svg>
+  <b>Chevron bawah</b><span class="mono">ChevronDownIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10 12 15l5-5" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10 12 15l5-5" /></svg>
+  </div>
+</div><div class="ic" data-group="Feedback">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 6.6 9 12l5.4 5.4" /></svg>
+  <b>Chevron kiri</b><span class="mono">ChevronLeftIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 6.6 9 12l5.4 5.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 6.6 9 12l5.4 5.4" /></svg>
+  </div>
+</div><div class="ic" data-group="Feedback">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 6.6 15 12l-5.4 5.4" /></svg>
+  <b>Chevron kanan</b><span class="mono">ChevronRightIcon</span>
+  <div class="sizes">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 6.6 15 12l-5.4 5.4" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 6.6 15 12l-5.4 5.4" /></svg>
+  </div>
+</div>
+  </div>
+
+  <h2>Warna</h2>
+  <div class="swatches">
+    <div class="sw"><span class="chip" style="background:#141311"></span>
+    <div><b class="mono">bg</b><span class="mono hex">#141311</span><p>Dasar background halaman</p></div></div><div class="sw"><span class="chip" style="background:rgba(255,255,255,0.05)"></span>
+    <div><b class="mono">glass</b><span class="mono hex">rgba(255,255,255,0.05)</span><p>Card, sidebar, topbar</p></div></div><div class="sw"><span class="chip" style="background:rgba(255,255,255,0.09)"></span>
+    <div><b class="mono">glass-strong</b><span class="mono hex">rgba(255,255,255,0.09)</span><p>Modal, dropdown, toast</p></div></div><div class="sw"><span class="chip" style="background:rgba(255,255,255,0.10)"></span>
+    <div><b class="mono">glass-border</b><span class="mono hex">rgba(255,255,255,0.10)</span><p>Semua garis tepi</p></div></div><div class="sw"><span class="chip" style="background:#f1eee9"></span>
+    <div><b class="mono">text</b><span class="mono hex">#f1eee9</span><p>Teks utama</p></div></div><div class="sw"><span class="chip" style="background:#a8a299"></span>
+    <div><b class="mono">muted</b><span class="mono hex">#a8a299</span><p>Label, sekunder</p></div></div><div class="sw"><span class="chip" style="background:#8b93ff"></span>
+    <div><b class="mono">accent</b><span class="mono hex">#8b93ff</span><p>Tombol utama, menu aktif, chart</p></div></div><div class="sw"><span class="chip" style="background:#12131f"></span>
+    <div><b class="mono">accent-ink</b><span class="mono hex">#12131f</span><p>Teks di atas aksen</p></div></div><div class="sw"><span class="chip" style="background:#6fae82"></span>
+    <div><b class="mono">active</b><span class="mono hex">#6fae82</span><p>Status Active</p></div></div><div class="sw"><span class="chip" style="background:#c9a35b"></span>
+    <div><b class="mono">expired</b><span class="mono hex">#c9a35b</span><p>Status Expired</p></div></div><div class="sw"><span class="chip" style="background:#c9645c"></span>
+    <div><b class="mono">banned</b><span class="mono hex">#c9645c</span><p>Status Banned</p></div></div>
+  </div>
+
+  <footer>
+    Berkas: <span class="mono">components/icons/index.tsx</span> · <span class="mono">components/icons/brand.tsx</span> ·
+    <span class="mono">public/brand/*.svg</span> · <span class="mono">app/icon.svg</span>
+  </footer>
+</div></body></html>

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>XLOOP PANEL — opsi warna aksen</title>
+<style>
+  :root {
+    --bg: #141311;
+    --text: #f1eee9;
+    --muted: #a8a299;
+    --border: rgba(255, 255, 255, 0.1);
+    --active: #6fae82;
+    --expired: #c9a35b;
+    --banned: #c9645c;
+  }
+  * { box-sizing: border-box; border-color: var(--border); }
+  body {
+    margin: 0;
+    padding: 32px 20px 56px;
+    background: #141311;
+    color: var(--text);
+    font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(600px circle at 12% 6%, rgba(255, 124, 76, 0.14), transparent 60%),
+      radial-gradient(700px circle at 88% 92%, rgba(86, 110, 150, 0.16), transparent 60%),
+      #141311;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  h1 { font-size: 20px; line-height: 28px; margin: 0 0 6px; font-weight: 600; }
+  .lead { color: var(--muted); margin: 0 0 20px; max-width: 760px; }
+  .note {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 0 0 24px;
+  }
+  .note h2 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+  .note p { margin: 0 0 8px; color: var(--muted); }
+  .note p:last-child { margin-bottom: 0; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  code { background: rgba(255, 255, 255, 0.07); padding: 1px 5px; border-radius: 5px; color: var(--text); }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
+  .opt {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px) saturate(140%);
+    border-radius: 16px;
+    padding: 16px;
+    transition: border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .opt:hover { border-color: rgba(255, 255, 255, 0.18); }
+  .opt.pick { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .opt-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--accent); flex: none; }
+  .opt-head b { font-size: 14px; font-weight: 600; }
+  .opt-head .hex { margin-left: auto; color: var(--muted); }
+  .badge-pick {
+    font-size: 11px; padding: 1px 7px; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--accent); font-weight: 600;
+  }
+  .meta { color: var(--muted); font-size: 12px; margin: 0 0 12px; min-height: 36px; }
+  .meta .warn { color: var(--expired); }
+  .meta .ok { color: var(--active); }
+  .preview {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: rgba(20, 19, 17, 0.72);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  /* sidebar item aktif */
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    position: relative; display: flex; align-items: center; gap: 8px;
+    height: 30px; padding: 0 8px; border-radius: 8px; color: var(--muted); font-size: 12px;
+  }
+  .nav-item.on { color: var(--accent); background: rgba(255, 255, 255, 0.09); }
+  .nav-item.on::before {
+    content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 2px; height: 16px; border-radius: 999px; background: var(--accent);
+  }
+  .ico { width: 12px; height: 12px; border: 1.5px solid currentColor; border-radius: 3px; flex: none; opacity: 0.8; }
+  /* tombol */
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .btn {
+    height: 32px; padding: 0 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: var(--ink);
+    border: 0;
+  }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); font-weight: 400; }
+  /* input focus */
+  .input {
+    height: 32px; border-radius: 8px; border: 1px solid var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+    background: rgba(255, 255, 255, 0.04);
+    display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: var(--muted);
+  }
+  /* chart */
+  .chart { position: relative; height: 74px; }
+  .chart svg { width: 100%; height: 100%; display: block; }
+  /* badge status */
+  .badges { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; }
+  .sb { display: inline-flex; align-items: center; gap: 5px; }
+  .sb i { width: 6px; height: 6px; border-radius: 999px; display: inline-block; }
+  /* stat */
+  .stat { display: flex; align-items: baseline; justify-content: space-between; }
+  .stat .label { font-size: 11px; color: var(--muted); }
+  .stat .num { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .toast {
+    display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text);
+    border: 1px solid var(--border); border-left: 2px solid var(--accent);
+    background: rgba(255, 255, 255, 0.09); border-radius: 8px; padding: 6px 9px;
+  }
+  .verdict { margin-top: 24px; }
+  .verdict h2 { font-size: 16px; margin: 0 0 10px; }
+  .verdict ol { margin: 0; padding-left: 20px; color: var(--muted); }
+  .verdict li { margin-bottom: 6px; }
+  .verdict strong { color: var(--text); }
+  .swatches { display: flex; gap: 8px; margin: 12px 0 0; flex-wrap: wrap; }
+  .sw {
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 8px; padding: 5px 9px;
+  }
+  .sw span { width: 12px; height: 12px; border-radius: 3px; }
+  @media (max-width: 720px) {
+    body { padding: 20px 14px 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Opsi warna aksen — XLOOP PANEL</h1>
+  <p class="lead">
+    Aksen coral <code>#ff7c4c</code> sekarang duduk di hue 16°, cuma <strong>12° dari warna Banned</strong>
+    dan <strong>23° dari Expired</strong>. Jadi mata membaca "aksen" dan "status" sebagai keluarga warna yang sama —
+    itu sumber rasa "kurang cocok". Solusinya: geser aksen keluar dari keluarga merah–amber, tetap redup, tetap lolos WCAG AA.
+  </p>
+
+  <div class="note">
+    <h2>Ringkas temuan teknis</h2>
+    <p>• Coral sekarang: hue 16° · jarak ke Expired 23° · jarak ke Banned 12° → aksen &amp; status berebut perhatian.</p>
+    <p>• Teal mint <em>tidak</em> disarankan: jaraknya cuma 29° ke Active (hijau) — masalah yang sama, cuma pindah tempat.</p>
+    <p>• Semua opsi di bawah ≥ 5,9:1 terhadap background, jadi tetap aman untuk teks &amp; fokus ring.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- A. Coral sekarang -->
+    <section class="opt" style="--accent:#ff7c4c;--ink:#1b1207">
+      <div class="opt-head"><span class="dot"></span><b>Coral (sekarang)</b><code class="hex">#ff7c4c</code></div>
+      <p class="meta">hue 16° · <span class="warn">jarak ke Banned 12°, Expired 23°</span> · kontras 7,3:1</p>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-item"><i class="ico"></i>Dashboard</div>
+          <div class="nav-item on"><i class="ico"></i>Key List</div>
+        </div>
+        <div class="row"><button class="btn">Buat Key</button><button class="btn ghost">Muat ulang</button></div>
+        <div class="input">Cari key…</div>
+        <div class="chart">
+          <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+            <line x1="0" y1="18" x2="300" y2="18" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="42" x2="300" y2="42" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)" />
+            <polyline points="0,58 50,44 100,50 150,26 200,34 250,14 300,30" fill="none" stroke="#ff7c4c" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="badges">
+          <span class="sb" style="color:#6fae82"><i style="background:#6fae82"></i>Active</span>
+          <span class="sb" style="color:#c9a35b"><i style="background:#c9a35b"></i>Expired</span>
+          <span class="sb" style="color:#c9645c"><i style="background:#c9645c"></i>Banned</span>
+        </div>
+        <div class="stat"><span class="label">Total Key</span><span class="num">148</span></div>
+        <div class="toast">Key disalin</div>
+      </div>
+    </section>
+
+    <!-- B. Terracotta -->
+    <section class="opt" style="--accent:#d97757;--ink:#180d07">
+      <div class="opt-head"><span class="dot"></span><b>Terracotta redup</b><code class="hex">#d97757</code></div>
+      <p class="meta">hue 15° · <span class="warn">jarak ke Banned 11°</span> · kontras 6,0:1</p>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-item"><i class="ico"></i>Dashboard</div>
+          <div class="nav-item on"><i class="ico"></i>Key List</div>
+        </div>
+        <div class="row"><button class="btn">Buat Key</button><button class="btn ghost">Muat ulang</button></div>
+        <div class="input">Cari key…</div>
+        <div class="chart">
+          <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+            <line x1="0" y1="18" x2="300" y2="18" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="42" x2="300" y2="42" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)" />
+            <polyline points="0,58 50,44 100,50 150,26 200,34 250,14 300,30" fill="none" stroke="#d97757" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="badges">
+          <span class="sb" style="color:#6fae82"><i style="background:#6fae82"></i>Active</span>
+          <span class="sb" style="color:#c9a35b"><i style="background:#c9a35b"></i>Expired</span>
+          <span class="sb" style="color:#c9645c"><i style="background:#c9645c"></i>Banned</span>
+        </div>
+        <div class="stat"><span class="label">Total Key</span><span class="num">148</span></div>
+        <div class="toast">Key disalin</div>
+      </div>
+    </section>
+
+    <!-- C. Periwinkle -->
+    <section class="opt pick" style="--accent:#8b93ff;--ink:#12131f">
+      <div class="opt-head"><span class="dot"></span><b>Periwinkle</b><code class="hex">#8b93ff</code><span class="badge-pick">dipakai sekarang</span></div>
+      <p class="meta">hue 236° · <span class="ok">jarak ke status ≥ 98°</span> · kontras 6,8:1</p>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-item"><i class="ico"></i>Dashboard</div>
+          <div class="nav-item on"><i class="ico"></i>Key List</div>
+        </div>
+        <div class="row"><button class="btn">Buat Key</button><button class="btn ghost">Muat ulang</button></div>
+        <div class="input">Cari key…</div>
+        <div class="chart">
+          <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+            <line x1="0" y1="18" x2="300" y2="18" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="42" x2="300" y2="42" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)" />
+            <polyline points="0,58 50,44 100,50 150,26 200,34 250,14 300,30" fill="none" stroke="#8b93ff" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="badges">
+          <span class="sb" style="color:#6fae82"><i style="background:#6fae82"></i>Active</span>
+          <span class="sb" style="color:#c9a35b"><i style="background:#c9a35b"></i>Expired</span>
+          <span class="sb" style="color:#c9645c"><i style="background:#c9645c"></i>Banned</span>
+        </div>
+        <div class="stat"><span class="label">Total Key</span><span class="num">148</span></div>
+        <div class="toast">Key disalin</div>
+      </div>
+    </section>
+
+    <!-- D. Sky blue -->
+    <section class="opt" style="--accent:#5fa8f5;--ink:#0b1520">
+      <div class="opt-head"><span class="dot"></span><b>Sky blue</b><code class="hex">#5fa8f5</code></div>
+      <p class="meta">hue 211° · <span class="ok">jarak ke status ≥ 73°</span> · kontras 7,4:1</p>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-item"><i class="ico"></i>Dashboard</div>
+          <div class="nav-item on"><i class="ico"></i>Key List</div>
+        </div>
+        <div class="row"><button class="btn">Buat Key</button><button class="btn ghost">Muat ulang</button></div>
+        <div class="input">Cari key…</div>
+        <div class="chart">
+          <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+            <line x1="0" y1="18" x2="300" y2="18" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="42" x2="300" y2="42" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)" />
+            <polyline points="0,58 50,44 100,50 150,26 200,34 250,14 300,30" fill="none" stroke="#5fa8f5" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="badges">
+          <span class="sb" style="color:#6fae82"><i style="background:#6fae82"></i>Active</span>
+          <span class="sb" style="color:#c9a35b"><i style="background:#c9a35b"></i>Expired</span>
+          <span class="sb" style="color:#c9645c"><i style="background:#c9645c"></i>Banned</span>
+        </div>
+        <div class="stat"><span class="label">Total Key</span><span class="num">148</span></div>
+        <div class="toast">Key disalin</div>
+      </div>
+    </section>
+
+    <!-- E. Teal -->
+    <section class="opt" style="--accent:#4fd1b5;--ink:#08201a">
+      <div class="opt-head"><span class="dot"></span><b>Teal mint</b><code class="hex">#4fd1b5</code></div>
+      <p class="meta">hue 167° · <span class="warn">jarak ke Active cuma 29°</span> · kontras 9,8:1</p>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-item"><i class="ico"></i>Dashboard</div>
+          <div class="nav-item on"><i class="ico"></i>Key List</div>
+        </div>
+        <div class="row"><button class="btn">Buat Key</button><button class="btn ghost">Muat ulang</button></div>
+        <div class="input">Cari key…</div>
+        <div class="chart">
+          <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+            <line x1="0" y1="18" x2="300" y2="18" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="42" x2="300" y2="42" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)" />
+            <polyline points="0,58 50,44 100,50 150,26 200,34 250,14 300,30" fill="none" stroke="#4fd1b5" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="badges">
+          <span class="sb" style="color:#6fae82"><i style="background:#6fae82"></i>Active</span>
+          <span class="sb" style="color:#c9a35b"><i style="background:#c9a35b"></i>Expired</span>
+          <span class="sb" style="color:#c9645c"><i style="background:#c9645c"></i>Banned</span>
+        </div>
+        <div class="stat"><span class="label">Total Key</span><span class="num">148</span></div>
+        <div class="toast">Key disalin</div>
+      </div>
+    </section>
+
+    <!-- F. Soft violet gelap (alternatif kalem) -->
+    <section class="opt" style="--accent:#a78bfa;--ink:#150f26">
+      <div class="opt-head"><span class="dot"></span><b>Soft violet</b><code class="hex">#a78bfa</code></div>
+      <p class="meta">hue 255° · <span class="ok">jarak ke status ≥ 109°</span> · kontras 7,6:1</p>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-item"><i class="ico"></i>Dashboard</div>
+          <div class="nav-item on"><i class="ico"></i>Key List</div>
+        </div>
+        <div class="row"><button class="btn">Buat Key</button><button class="btn ghost">Muat ulang</button></div>
+        <div class="input">Cari key…</div>
+        <div class="chart">
+          <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+            <line x1="0" y1="18" x2="300" y2="18" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="42" x2="300" y2="42" stroke="rgba(255,255,255,0.06)" />
+            <line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)" />
+            <polyline points="0,58 50,44 100,50 150,26 200,34 250,14 300,30" fill="none" stroke="#a78bfa" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="badges">
+          <span class="sb" style="color:#6fae82"><i style="background:#6fae82"></i>Active</span>
+          <span class="sb" style="color:#c9a35b"><i style="background:#c9a35b"></i>Expired</span>
+          <span class="sb" style="color:#c9645c"><i style="background:#c9645c"></i>Banned</span>
+        </div>
+        <div class="stat"><span class="label">Total Key</span><span class="num">148</span></div>
+        <div class="toast">Key disalin</div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="verdict">
+    <h2>Kesimpulan <span class="badge-pick" style="--accent:#8b93ff">dipakai: periwinkle</span></h2>
+    <ol>
+      <li><strong>Periwinkle <code>#8b93ff</code> ✅ dipakai</strong> — pilihan paling seimbang: kontras 6,8:1, jauh dari semua warna status, dan tetap kalem di atas background cokelat gelap yang hangat (komplementer, bukan tabrakan).</li>
+      <li><strong>Sky blue <code>#5fa8f5</code></strong> — kalau mau terasa lebih "admin tool dingin/formal", bukan playful. Kontras tertinggi kedua (7,4:1).</li>
+      <li><strong>Soft violet <code>#a78bfa</code></strong> — kalau mau kesan lebih premium/techy; paling jauh dari semua warna status.</li>
+      <li><strong>Terracotta <code>#d97757</code></strong> — cuma kalau kamu tetap mau nuansa hangat; risikonya masih dekat dengan Banned (11°) dan kontrasnya paling rendah.</li>
+    </ol>
+    <div class="swatches">
+      <span class="sw"><span style="background:#8b93ff"></span>#8b93ff periwinkle</span>
+      <span class="sw"><span style="background:#5fa8f5"></span>#5fa8f5 sky</span>
+      <span class="sw"><span style="background:#a78bfa"></span>#a78bfa violet</span>
+      <span class="sw"><span style="background:#d97757"></span>#d97757 terracotta</span>
+      <span class="sw"><span style="background:#ff7c4c"></span>#ff7c4c coral (sekarang)</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

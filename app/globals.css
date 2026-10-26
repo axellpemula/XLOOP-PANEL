@@ -1,0 +1,349 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   TOKENS
+   ========================================================= */
+:root {
+  --bg: #141311;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-strong: rgba(255, 255, 255, 0.09);
+  --glass-table: rgba(20, 19, 17, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.06);
+  --text: #f1eee9;
+  --muted: #a8a299;
+  /* Aksen periwinkle: hue 236°, sengaja jauh dari warna status
+     (Active 114°, Expired 170°, Banned 123°) supaya aksen tidak berebut
+     perhatian dengan status. Kontras 6,8:1 di atas --bg. */
+  --accent: #8b93ff;
+  --accent-ink: #12131f;
+  --active: #6fae82;
+  --expired: #c9a35b;
+  --banned: #c9645c;
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --solid: #232220;
+  --row-hover: var(--glass-strong);
+  --header-bg: rgba(20, 19, 17, 0.9);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --blur-surface: 16px;
+}
+
+* {
+  border-color: var(--glass-border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Background halaman: dasar gelap + 2 blob statis */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Dua blob statis, diselaraskan dengan aksen periwinkle.
+     Alpha tetap redup supaya efek kaca terlihat tanpa bikin ramai. */
+  background:
+    radial-gradient(600px circle at 15% 10%, rgba(139, 147, 255, 0.11), transparent 60%),
+    radial-gradient(700px circle at 85% 85%, rgba(86, 110, 150, 0.18), transparent 60%),
+    #141311;
+}
+
+/* =========================================================
+   PERMUKAAN KACA
+   Semua efek kaca ditulis di sini, tidak diulang di komponen.
+   ========================================================= */
+.glass,
+.glass-strong,
+.glass-table {
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.glass {
+  background-color: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+.glass-strong {
+  background-color: var(--glass-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
+.glass-table {
+  background-color: var(--glass-table);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Blur lebih kecil di layar sempit (performa) */
+@media (max-width: 767px) {
+  .glass,
+  .glass-strong {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+  .glass-table {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Elemen di dalam permukaan kaca: warna transparan solid, tanpa blur */
+.surface-inset {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+}
+
+/* Fallback: tanpa dukungan backdrop-filter → solid */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-strong,
+  .glass-table {
+    background-color: var(--solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong,
+  .glass-table {
+    background-color: var(--solid) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* =========================================================
+   SPOTLIGHT KARTU (hanya perangkat hover)
+   ========================================================= */
+.spotlight-card {
+  position: relative;
+  transition:
+    transform 180ms var(--ease-out),
+    border-color 180ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .spotlight-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 180ms var(--ease-out);
+    background: radial-gradient(
+      160px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.06),
+      transparent 70%
+    );
+  }
+
+  .spotlight-card:hover::after {
+    opacity: 1;
+  }
+
+  .spotlight-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.18) !important;
+  }
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+.field {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text);
+  background-color: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  outline: none;
+  transition:
+    border-color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out);
+}
+
+.field::placeholder {
+  color: var(--muted);
+}
+
+.field:focus-visible,
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 147, 255, 0.32);
+}
+
+.field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+textarea.field {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.field-error {
+  border-color: var(--banned);
+}
+
+/* =========================================================
+   LAIN-LAIN
+   ========================================================= */
+::selection {
+  background: rgba(139, 147, 255, 0.3);
+  color: var(--text);
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(139, 147, 255, 0.38);
+  border-radius: 8px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar tipis untuk area scroll utama */
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Tabel: header sticky + hover baris */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 40px;
+  padding: 0 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(6px);
+}
+
+.data-table tbody td {
+  height: 44px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  position: relative;
+  transition: background-color 150ms var(--ease-out);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--glass-strong);
+}
+
+.data-table tbody tr::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+}
+
+.data-table tbody tr:hover::after {
+  opacity: 1;
+}
+
+.data-table tbody td:first-child,
+.data-table thead th:first-child {
+  padding-left: 16px;
+}
+
+/* Skeleton */
+.skeleton-block {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 100ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .spotlight-card::after {
+    display: none !important;
+  }
+
+  .spotlight-card:hover {
+    transform: none !important;
+  }
+}
