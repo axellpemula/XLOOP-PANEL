@@ -7,7 +7,6 @@ import { CopyButton } from "@/components/ui/CopyButton";
 import { Reveal } from "@/components/ui/Reveal";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Avatar } from "@/components/ui/Avatar";
 import { effectiveStatus } from "@/lib/utils/status";
 import { daysLeft, formatDate, formatDateTime, formatNumber } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -48,7 +47,7 @@ function SortHeader({
 }) {
   const active = sort === field;
   return (
-    <th className={className}>
+    <th className={className} aria-sort={active ? (order === "asc" ? "ascending" : "descending") : undefined}>
       <button
         type="button"
         onClick={() => onSortChange(field)}
@@ -162,7 +161,7 @@ export function KeyTable({
                         >
                           {key.key_value}
                         </button>
-                        <CopyButton value={key.key_value} label="Salin key" toastMessage="Key disalin" />
+                        <CopyButton value={key.key_value} label={`Salin key ${key.key_value}`} toastMessage="Key disalin" />
                       </div>
                     </td>
                     <td className="text-text">{key.tool_type?.name ?? "-"}</td>
@@ -199,14 +198,7 @@ export function KeyTable({
                         </span>
                       </span>
                     </td>
-                    {isOwner && (
-                      <td>
-                        <span className="flex items-center gap-2 text-muted">
-                          <Avatar name={key.creator?.username ?? "?"} className="h-6 w-6 rounded-md text-[10px]" />
-                          <span className="truncate">{key.creator?.username ?? "-"}</span>
-                        </span>
-                      </td>
-                    )}
+                    {isOwner && <td className="text-muted">{key.creator?.username ?? "-"}</td>}
                     <td className="text-muted">{formatDateTime(key.created_at)}</td>
                     <td>
                       <div className="flex items-center justify-end gap-1 transition-opacity duration-150 md:opacity-60 md:focus-within:opacity-100 md:group-hover:opacity-100">
@@ -216,7 +208,7 @@ export function KeyTable({
                             event.stopPropagation();
                             onEdit(key);
                           }}
-                          aria-label="Edit key"
+                          aria-label={`Edit key ${key.key_value}`}
                           title="Edit"
                         >
                           <PencilIcon size={16} strokeWidth={1.5} />
@@ -227,7 +219,7 @@ export function KeyTable({
                             event.stopPropagation();
                             onToggleBan(key);
                           }}
-                          aria-label={key.status === "banned" ? "Unban key" : "Ban key"}
+                          aria-label={key.status === "banned" ? `Unban key ${key.key_value}` : `Ban key ${key.key_value}`}
                           title={key.status === "banned" ? "Unban" : "Ban"}
                         >
                           <BanIcon size={16} strokeWidth={1.5} className={key.status === "banned" ? "text-banned" : ""} />
@@ -238,7 +230,7 @@ export function KeyTable({
                             event.stopPropagation();
                             onDetail(key);
                           }}
-                          aria-label="Reset HWID"
+                          aria-label={`Reset HWID key ${key.key_value}`}
                           title="HWID"
                         >
                           <ResetIcon size={16} strokeWidth={1.5} />
@@ -249,7 +241,7 @@ export function KeyTable({
                             event.stopPropagation();
                             onDelete(key);
                           }}
-                          aria-label="Hapus key"
+                          aria-label={`Hapus key ${key.key_value}`}
                           title="Hapus"
                         >
                           <TrashIcon size={16} strokeWidth={1.5} />

@@ -20,7 +20,9 @@ export function FieldWrap({ label, hint, error, htmlFor, children, className }: 
       </label>
       {children}
       {error ? (
-        <p className="text-label text-banned">{error}</p>
+        <p className="text-label text-banned" role="alert">
+          {error}
+        </p>
       ) : (
         hint && <p className="text-label text-muted">{hint}</p>
       )}

@@ -10,7 +10,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { XloopTile } from "@/components/icons/brand";
 import { cn } from "@/lib/utils/cn";
-import { formatNumber } from "@/lib/utils/format";
 import type { SessionUser } from "@/lib/utils/types";
 
 interface SidebarProps {
@@ -37,6 +36,7 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
       >
         <Link
           href="/dashboard"
+          aria-label="XLOOP — ke Dashboard"
           onClick={onNavigate}
           className={cn("flex min-w-0 items-center gap-2 rounded-lg px-1", collapsed && "justify-center")}
         >
@@ -89,6 +89,9 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
                 const content = (
                   <Link
                     href={item.href}
+                    // Saat collapsed teks label tidak dirender; tanpa ini
+                    // link ikon-saja tidak punya nama aksesibel.
+                    aria-label={collapsed ? item.label : undefined}
                     onClick={onNavigate}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
@@ -149,7 +152,7 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
             <Link
               href={user.role === "reseller" ? "/credits" : "/resellers"}
               onClick={onNavigate}
-              className="mx-auto block w-fit rounded-lg"
+              className="mx-auto block w-fit rounded-full"
               aria-label={`Profil ${user.username}`}
             >
               <Avatar name={user.username} />
@@ -163,11 +166,6 @@ export function SidebarContent({ user, collapsed, onToggle, onNavigate, variant 
               <div className="mt-0.5 flex items-center gap-1.5">
                 <RoleBadge role={user.role} />
               </div>
-              {user.role === "reseller" && (
-                <p className="mt-1 text-label text-muted tabular">
-                  Credit: <span className="text-text">{formatNumber(user.credit)}</span>
-                </p>
-              )}
             </div>
           </div>
         )}

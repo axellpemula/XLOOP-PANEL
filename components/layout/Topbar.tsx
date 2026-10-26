@@ -49,6 +49,11 @@ export function Topbar({ user, title, onOpenMenu, onOpenSearch, scrollRef }: Top
     function onPointerDown(event: PointerEvent) {
       if (!profileRef.current?.contains(event.target as Node)) setProfileOpen(false);
     }
+    function onFocusIn(event: FocusEvent) {
+      // Tab keluar dari menu harus menutupnya — sebelumnya menu tetap
+      // menggantung terbuka sementara fokus sudah pindah ke halaman.
+      if (!profileRef.current?.contains(event.target as Node)) setProfileOpen(false);
+    }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -59,10 +64,12 @@ export function Topbar({ user, title, onOpenMenu, onOpenSearch, scrollRef }: Top
     }
 
     document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("focusin", onFocusIn);
     document.addEventListener("keydown", onKeyDown, true);
     return () => {
       window.cancelAnimationFrame(frame);
       document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("focusin", onFocusIn);
       document.removeEventListener("keydown", onKeyDown, true);
     };
   }, [profileOpen]);
@@ -160,7 +167,7 @@ export function Topbar({ user, title, onOpenMenu, onOpenSearch, scrollRef }: Top
           aria-label={`Menu akun ${user.username}`}
           className="flex items-center gap-2 rounded-xl p-1 pr-1.5 transition-colors duration-150 hover:bg-white/[0.05]"
         >
-          <Avatar name={user.username} className="h-8 w-8 rounded-lg" />
+          <Avatar name={user.username} className="h-8 w-8" />
           <span className="hidden min-w-0 flex-col items-start leading-tight sm:flex">
             <span className="max-w-[120px] truncate text-label font-medium text-text">{user.username}</span>
             <span className="text-[10px] uppercase tracking-[0.12em] text-muted">

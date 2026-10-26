@@ -29,6 +29,7 @@ export function CreditLogView({ role }: { role: Role }) {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const [action, setAction] = useState("");
   const [from, setFrom] = useState("");
@@ -91,6 +92,9 @@ export function CreditLogView({ role }: { role: Role }) {
   }, [isOwner]);
 
   async function exportCsv() {
+    // Cegah klik berulang memicu beberapa unduhan/file yang sama.
+    if (exporting) return;
+    setExporting(true);
     try {
       // Ambil semua baris sesuai filter untuk file CSV.
       const params = buildParams(1);
@@ -98,7 +102,9 @@ export function CreditLogView({ role }: { role: Role }) {
       const first = await apiFetch<Paginated<CreditLog>>(`/api/credits?${params.toString()}`);
 
       let all = [...first.data];
-      for (let p = 2; p <= first.totalPages && p <= 20; p += 1) {
+      // Ambil SEMUA halaman sesuai filter — batas 20 halaman lama memotong
+      // file secara diam-diam di 2.000 baris tanpa memberi tahu user.
+      for (let p = 2; p <= first.totalPages; p += 1) {
         const nextParams = buildParams(p);
         nextParams.set("per_page", "100");
         const res = await apiFetch<Paginated<CreditLog>>(`/api/credits?${nextParams.toString()}`);
@@ -112,11 +118,11 @@ export function CreditLogView({ role }: { role: Role }) {
         log.action,
         String(log.amount),
         String(log.balance_after),
-        (log.note ?? "").replace(/"/g, '""'),
+        log.note ?? "",
       ]);
 
       const csv = [header, ...lines]
-        .map((cols) => cols.map((col) => `"${col}"`).join(","))
+        .map((cols) => cols.map((col) => `"${col.replace(/"/g, '""')}"`).join(","))
         .join("\r\n");
 
       const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
@@ -131,6 +137,8 @@ export function CreditLogView({ role }: { role: Role }) {
       toast("CSV diunduh.", "success");
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal export CSV.", "error");
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -147,7 +155,7 @@ export function CreditLogView({ role }: { role: Role }) {
         title="Credit Log"
         description={isOwner ? "Semua transaksi credit reseller." : "Riwayat credit kamu."}
         action={
-          <Button onClick={exportCsv} icon={<DownloadIcon size={16} strokeWidth={1.5} />}>
+          <Button onClick={exportCsv} loading={exporting} icon={<DownloadIcon size={16} strokeWidth={1.5} />}>
             Export CSV
           </Button>
         }
@@ -181,6 +189,7 @@ export function CreditLogView({ role }: { role: Role }) {
           <Input
             type="date"
             value={from}
+            max={to || undefined}
             onChange={(event) => resetFilter(setFrom)(event.target.value)}
             aria-label="Dari tanggal"
             className="w-[150px] max-w-full text-label"
@@ -189,15 +198,14 @@ export function CreditLogView({ role }: { role: Role }) {
           <Input
             type="date"
             value={to}
+            min={from || undefined}
             onChange={(event) => resetFilter(setTo)(event.target.value)}
             aria-label="Sampai tanggal"
             className="w-[150px] max-w-full text-label"
           />
         </div>
 
-        <Button onClick={load} loading={loading} aria-label="Muat ulang">
-          <RefreshIcon size={16} strokeWidth={1.5} />
-        </Button>
+        <Button onClick={load} loading={loading} aria-label="Muat ulang" icon={<RefreshIcon size={16} strokeWidth={1.5} />} />
       </div>
 
       <div className="glass-table overflow-hidden rounded-card">

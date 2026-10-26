@@ -16,6 +16,14 @@ const PALETTES: Array<[string, string]> = [
   ["#c3b0ff", "#927fe8"],
 ];
 
+function hexToRgba(hex: string, alpha: number): string {
+  const value = Number.parseInt(hex.slice(1), 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function hashName(name: string): number {
   let hash = 0;
   for (let i = 0; i < name.length; i += 1) {
@@ -42,10 +50,16 @@ export function Avatar({
     <span
       aria-hidden
       className={cn(
-        "flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-lg text-label font-bold text-[#16171f] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_14px_rgba(0,0,0,0.28)] ring-1 ring-white/20",
+        "flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full border text-label font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_14px_rgba(0,0,0,0.18)] backdrop-blur-sm",
         className
       )}
-      style={{ backgroundImage: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` }}
+      style={{
+        // Background sengaja transparan: warna avatar tetap terbaca dari
+        // tint gradient + border + huruf pastelnya, bukan blok solid.
+        backgroundImage: `linear-gradient(135deg, ${hexToRgba(from, 0.3)} 0%, ${hexToRgba(to, 0.14)} 100%)`,
+        borderColor: hexToRgba(from, 0.35),
+        color: from,
+      }}
     >
       <span className={textClassName}>{letter}</span>
     </span>
