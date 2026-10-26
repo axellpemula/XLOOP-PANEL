@@ -18,7 +18,7 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-[background-color,border-color,color,transform] duration-150 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 select-none";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-[var(--accent-ink)] hover:brightness-110 font-semibold",
+  primary: "primary-surface text-[var(--accent-ink)] hover:brightness-110 font-semibold",
   ghost: "border border-glass-border bg-transparent text-text hover:bg-glass-strong",
   danger: "border border-banned/60 bg-banned/15 text-banned hover:bg-banned/25",
 };

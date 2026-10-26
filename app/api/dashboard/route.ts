@@ -22,9 +22,35 @@ export async function GET() {
 
     const todayISO = startOfTodayISO();
     const weekISO = startOfDaysAgoISO(6);
-    const days = lastNDates(7);
+    // Chart membawa 90 hari sekaligus; tab 7/30/90 hari di klien cukup
+    // memotong array ini tanpa request tambahan.
+    const chartISO = startOfDaysAgoISO(89);
+    const days = lastNDates(90);
 
     const keysBase = () => admin.from("keys").select("id", { count: "exact", head: true });
+
+    // Baris chart diambil per batch: satu select biasa bisa terpotong batas
+    // baris PostgREST (umumnya 1000), yang untuk rentang 90 hari akan
+    // membuat chart diam-diam menghitung kurang dari jumlah sebenarnya.
+    const chartRowsPromise = (async (): Promise<{ created_at: string }[]> => {
+      const rows: { created_at: string }[] = [];
+      const batchSize = 1000;
+      for (let from = 0; from < 100_000; from += batchSize) {
+        let query = admin
+          .from("keys")
+          .select("id,created_at")
+          .gte("created_at", chartISO)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, from + batchSize - 1);
+        if (isReseller) query = query.eq("created_by", user.id);
+        const { data } = await query;
+        const batch = (data ?? []) as { created_at: string }[];
+        rows.push(...batch);
+        if (batch.length < batchSize) break;
+      }
+      return rows;
+    })();
 
     const [all, active, expired, banned, today, week, chartRows, resellers] = await Promise.all([
       scope(keysBase()),
@@ -33,14 +59,14 @@ export async function GET() {
       scope(keysBase().eq("status", "banned")),
       scope(keysBase().gte("created_at", todayISO)),
       scope(keysBase().gte("created_at", weekISO)),
-      scope(admin.from("keys").select("created_at").gte("created_at", weekISO)),
+      chartRowsPromise,
       isReseller
         ? Promise.resolve({ count: 0 })
         : admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "reseller").eq("is_active", true),
     ]);
 
     const perDay = new Map<string, number>();
-    for (const row of (chartRows.data ?? []) as { created_at: string }[]) {
+    for (const row of chartRows) {
       const day = new Date(row.created_at).toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
       perDay.set(day, (perDay.get(day) ?? 0) + 1);
     }

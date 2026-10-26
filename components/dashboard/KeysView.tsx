@@ -26,6 +26,8 @@ import type {
 interface KeysViewProps {
   role: Role;
   credit: number;
+  /** Diisi command palette lewat query ?search=… */
+  initialSearch?: string;
 }
 
 const STATUS_OPTIONS = [
@@ -43,7 +45,7 @@ const SORT_OPTIONS = [
   { value: "status:asc", label: "Status A–Z" },
 ];
 
-export function KeysView({ role, credit }: KeysViewProps) {
+export function KeysView({ role, credit, initialSearch = "" }: KeysViewProps) {
   const { toast } = useToast();
   const router = useRouter();
   const isOwner = role === "owner";
@@ -54,8 +56,8 @@ export function KeysView({ role, credit }: KeysViewProps) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch.trim());
   const [status, setStatus] = useState("");
   const [toolId, setToolId] = useState("");
   const [versionId, setVersionId] = useState("");
@@ -73,6 +75,15 @@ export function KeysView({ role, credit }: KeysViewProps) {
   const [deleting, setDeleting] = useState(false);
 
   const perPage = 10;
+
+  // Query dari URL bisa berubah saat halaman sudah terbuka (mis. Ctrl+K
+  // dipakai lagi dari Key List) — sinkronkan ke state pencarian.
+  useEffect(() => {
+    const next = initialSearch.trim();
+    setSearch(next);
+    setDebouncedSearch(next);
+    setPage(1);
+  }, [initialSearch]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 350);
@@ -302,6 +313,16 @@ export function KeysView({ role, credit }: KeysViewProps) {
         onToggleBan={toggleBan}
         onDelete={setDeleteTarget}
         onCreate={() => router.push("/generate")}
+        filtered={Boolean(search || status || toolId || versionId || resellerId)}
+        onClearFilters={() => {
+          setSearch("");
+          setDebouncedSearch("");
+          setStatus("");
+          setToolId("");
+          setVersionId("");
+          setResellerId("");
+          setPage(1);
+        }}
       />
 
       <Pagination page={page} totalPages={totalPages} total={total} perPage={perPage} onPageChange={setPage} />

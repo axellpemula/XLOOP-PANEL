@@ -33,6 +33,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
   const counter = useRef(0);
   const timers = useRef(new Map<number, number>());
+  // Cermin state di ref supaya dedupe akurat walau toast() dipanggil
+  // beberapa kali dalam satu tick (state belum sempat commit).
+  const itemsRef = useRef<ToastItem[]>([]);
   const reduce = useReducedMotion();
 
   const remove = useCallback((id: number) => {
@@ -41,28 +44,35 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       window.clearTimeout(timer);
       timers.current.delete(id);
     }
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    itemsRef.current = itemsRef.current.filter((item) => item.id !== id);
+    setItems(itemsRef.current);
   }, []);
 
   const toast = useCallback(
     (message: string, tone: ToastTone = "info") => {
+      // Pesan yang sama persis tidak ditumpuk dua kali — cukup perpanjang
+      // umur toast yang sedang tampil.
+      const existing = itemsRef.current.find((item) => item.message === message && item.tone === tone);
+      if (existing) {
+        const timer = timers.current.get(existing.id);
+        if (timer !== undefined) window.clearTimeout(timer);
+        timers.current.set(existing.id, window.setTimeout(() => remove(existing.id), 4000));
+        return;
+      }
+
       counter.current += 1;
       const id = counter.current;
-      setItems((prev) => {
-        // Bersihkan timer toast yang tergusur dari tumpukan (maks. 4).
-        for (const dropped of prev.slice(0, -3)) {
-          const timer = timers.current.get(dropped.id);
-          if (timer !== undefined) {
-            window.clearTimeout(timer);
-            timers.current.delete(dropped.id);
-          }
+      // Bersihkan timer toast yang tergusur dari tumpukan (maks. 4).
+      for (const dropped of itemsRef.current.slice(0, -3)) {
+        const timer = timers.current.get(dropped.id);
+        if (timer !== undefined) {
+          window.clearTimeout(timer);
+          timers.current.delete(dropped.id);
         }
-        return [...prev.slice(-3), { id, message, tone }];
-      });
-      timers.current.set(
-        id,
-        window.setTimeout(() => remove(id), 4000)
-      );
+      }
+      itemsRef.current = [...itemsRef.current.slice(-3), { id, message, tone }];
+      setItems(itemsRef.current);
+      timers.current.set(id, window.setTimeout(() => remove(id), 4000));
     },
     [remove]
   );
@@ -81,7 +91,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[calc(100%-32px)] max-w-sm flex-col gap-2">
+      <div className="pointer-events-none fixed bottom-24 right-4 z-[60] flex w-[calc(100%-32px)] max-w-sm flex-col gap-2 md:bottom-4">
         <AnimatePresence initial={false}>
           {items.map((item) => (
             <motion.div

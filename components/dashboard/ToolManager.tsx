@@ -1,7 +1,20 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { ChevronDownIcon, ChevronRightIcon, KeyIcon, LockIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  EyeOffIcon,
+  KeyIcon,
+  LockIcon,
+  PencilIcon,
+  PlusIcon,
+  ShieldIcon,
+  ToolsIcon,
+  TrashIcon,
+} from "@/components/icons";
+import { cn } from "@/lib/utils/cn";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
@@ -31,6 +44,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
   const [tools, setTools] = useState<ToolType[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [publicKeyOpen, setPublicKeyOpen] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ToolType | null>(null);
@@ -240,6 +254,11 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
   }
 
   const secretLabel = editing?.has_secret && !replaceSecret;
+  const normalizedPublicKey = publicKey?.replace(/\s+/g, " ").trim() ?? "";
+  const publicKeyPreview =
+    normalizedPublicKey.length > 48
+      ? `${normalizedPublicKey.slice(0, 30)}…${normalizedPublicKey.slice(-14)}`
+      : normalizedPublicKey;
 
   return (
     <div>
@@ -254,18 +273,57 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
       />
 
       <GlassCard className="mb-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-label text-muted">Public key verifikasi</p>
-            <p className="mt-0.5 text-label text-muted">Tanam di sisi tool untuk cek signature response.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/20 bg-accent-soft text-accent">
+              <ShieldIcon size={18} strokeWidth={1.5} />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-body font-medium text-text">Public key verifikasi</h2>
+                <SimpleBadge tone={publicKey ? "active" : "expired"}>{publicKey ? "Tersedia" : "Belum diset"}</SimpleBadge>
+              </div>
+              <p className="mt-0.5 text-label text-muted">Tanam di sisi tool untuk cek signature response. Detailnya disembunyikan agar halaman tetap ringkas.</p>
+            </div>
           </div>
-          {/* Sembunyikan saat key belum diset: tombol lama menyalin string
-              kosong tapi tetap menampilkan toast "disalin". */}
-          {publicKey && <CopyButton value={publicKey} label="Salin public key" toastMessage="Public key disalin" />}
+
+          {publicKey && (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => setPublicKeyOpen((prev) => !prev)}
+                aria-expanded={publicKeyOpen}
+                aria-controls="public-key-panel"
+                icon={publicKeyOpen ? <EyeOffIcon size={15} strokeWidth={1.5} /> : <EyeIcon size={15} strokeWidth={1.5} />}
+              >
+                {publicKeyOpen ? "Sembunyikan" : "Tampilkan"}
+                <ChevronDownIcon size={14} strokeWidth={1.5} className={cn("transition-transform duration-150", publicKeyOpen && "rotate-180")} />
+              </Button>
+              {/* Sembunyikan saat key belum diset: tombol lama menyalin string
+                  kosong tapi tetap menampilkan toast "disalin". */}
+              <CopyButton value={publicKey} label="Salin public key" toastMessage="Public key disalin" />
+            </div>
+          )}
         </div>
-        <pre className="mt-2 max-h-24 overflow-auto scroll-area rounded-lg border border-glass-border bg-white/[0.04] p-3 font-mono text-[11px] leading-5 text-muted">
-{publicKey ?? "LICENSE_SIGNING_PUBLIC_KEY belum diset di environment."}
-        </pre>
+
+        {publicKey ? (
+          publicKeyOpen ? (
+            <pre
+              id="public-key-panel"
+              className="mt-3 max-h-40 overflow-auto scroll-area rounded-lg border border-glass-border bg-white/[0.04] p-3 font-mono text-[11px] leading-5 text-muted"
+            >
+              {publicKey}
+            </pre>
+          ) : (
+            <p id="public-key-panel" className="mt-3 truncate rounded-lg border border-glass-border bg-white/[0.03] px-3 py-2 font-mono text-[11px] text-muted" aria-label="Pratinjau public key tersamar">
+              {publicKeyPreview}
+            </p>
+          )
+        ) : (
+          <p className="mt-3 rounded-lg border border-expired/20 bg-expired-soft px-3 py-2 font-mono text-[11px] text-expired">
+            LICENSE_SIGNING_PUBLIC_KEY belum diset di environment.
+          </p>
+        )}
       </GlassCard>
 
       <div className="glass-table overflow-hidden rounded-card">
@@ -298,7 +356,14 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
               {!loading && tools.length === 0 && (
                 <tr>
                   <td colSpan={7}>
-                    <EmptyState message="Belum ada tool" actionLabel="Tambah Tool" onAction={openCreate} />
+                    <EmptyState
+                      message="Belum ada tool"
+                      hint="Buat tool pertama, tambahkan version, lalu generate key untuknya."
+                      icon={<ToolsIcon size={20} strokeWidth={1.5} />}
+                      steps={["Buat tool", "Tambah version", "Atur secret", "Generate key"]}
+                      actionLabel="Tambah Tool"
+                      onAction={openCreate}
+                    />
                   </td>
                 </tr>
               )}

@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircleIcon, DownloadIcon, KeyIcon, PlusIcon } from "@/components/icons";
+import {
+  CalendarIcon,
+  CheckCircleIcon,
+  CopyIcon,
+  DownloadIcon,
+  KeyIcon,
+  MinusIcon,
+  PlusIcon,
+  TimerIcon,
+  WalletIcon,
+} from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { FieldWrap, Input, Textarea } from "@/components/ui/Field";
+import { FieldWrap, Textarea } from "@/components/ui/Field";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Select } from "@/components/ui/Select";
 import { CopyButton, copyText } from "@/components/ui/CopyButton";
@@ -12,7 +22,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { apiFetch } from "@/lib/api/client";
 import { LIMITS } from "@/lib/utils/constants";
-import { formatDateTime, formatNumber } from "@/lib/utils/format";
+import { formatDate, formatDateTime, formatNumber } from "@/lib/utils/format";
+import { cn } from "@/lib/utils/cn";
 import type { DurationPreset, Role, ToolType } from "@/lib/utils/types";
 
 interface GenerateResult {
@@ -28,6 +39,102 @@ interface GenerateResult {
     credit_used: number;
     credit_left: number | null;
   };
+}
+
+
+function SectionHeading({ step, title, description }: { step: number; title: string; description?: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/25 bg-accent-soft text-label font-semibold text-accent">
+        {step}
+      </span>
+      <div>
+        <h2 className="text-body font-medium leading-5 text-text">{title}</h2>
+        {description && <p className="mt-0.5 text-label text-muted">{description}</p>}
+      </div>
+    </div>
+  );
+}
+
+function NumberStepper({
+  id,
+  label,
+  value,
+  onChange,
+  min,
+  max,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  min: number;
+  max: number;
+}) {
+  const numeric = Number(value);
+  const hasNumber = value.trim() !== "" && Number.isFinite(numeric);
+
+  function step(delta: number) {
+    const base = hasNumber ? numeric : min;
+    onChange(String(Math.min(max, Math.max(min, base + delta))));
+  }
+
+  const stepButton =
+    "flex h-full w-10 shrink-0 items-center justify-center text-muted transition-colors duration-150 hover:bg-white/[0.05] hover:text-text disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent";
+
+  return (
+    <div className="flex h-10 items-stretch overflow-hidden rounded-lg border border-glass-border bg-white/[0.03] focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/20">
+      <button type="button" aria-label={`Kurangi ${label}`} onClick={() => step(-1)} disabled={hasNumber && numeric <= min} className={stepButton}>
+        <MinusIcon size={15} strokeWidth={1.6} />
+      </button>
+      <input
+        id={id}
+        type="number"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onWheel={(event) => event.currentTarget.blur()}
+        className="h-full min-w-0 flex-1 bg-transparent text-center text-body text-text outline-none tabular [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+      <button type="button" aria-label={`Tambah ${label}`} onClick={() => step(1)} disabled={hasNumber && numeric >= max} className={stepButton}>
+        <PlusIcon size={15} strokeWidth={1.6} />
+      </button>
+    </div>
+  );
+}
+
+function QuickChips({
+  values,
+  current,
+  onPick,
+  label,
+}: {
+  values: number[];
+  current: string;
+  onPick: (value: string) => void;
+  label: string;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`Pilihan cepat ${label}`}>
+      {values.map((value) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={current === String(value)}
+          onClick={() => onPick(String(value))}
+          className={cn(
+            "min-h-7 rounded-full border px-2.5 text-label tabular transition-colors duration-150",
+            current === String(value)
+              ? "border-accent/40 bg-accent-soft font-medium text-accent"
+              : "border-glass-border text-muted hover:bg-white/[0.05] hover:text-text"
+          )}
+        >
+          {value}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function GenerateView({ role, credit }: { role: Role; credit: number }) {
@@ -99,6 +206,17 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
   const costPerKey = isOwner ? 0 : selectedPreset?.credit_cost ?? 0;
   const totalCost = costPerKey * qty;
   const creditAfter = currentCredit - totalCost;
+  const estimatedExpiry = days > 0 ? new Date(Date.now() + days * 86_400_000) : null;
+  const creditUsePercent =
+    currentCredit > 0 ? Math.min(100, Math.max(0, (totalCost / currentCredit) * 100)) : totalCost > 0 ? 100 : 0;
+  const durationLabel =
+    isOwner && durationMode === "custom"
+      ? days > 0
+        ? `Custom · ${formatNumber(days)} hari`
+        : "Custom"
+      : selectedPreset
+        ? `${selectedPreset.name} · ${formatNumber(selectedPreset.days)} hari`
+        : "Belum dipilih";
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -199,8 +317,8 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Form */}
-        <form onSubmit={submit} className="lg:col-span-7">
-          <GlassCard className="flex flex-col gap-4">
+        <form id="generate-key-form" onSubmit={submit} noValidate className="lg:col-span-7">
+          <GlassCard className="flex flex-col gap-6">
             {metaLoading ? (
               <div className="flex flex-col gap-3">
                 {Array.from({ length: 5 }).map((_, index) => (
@@ -209,7 +327,9 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <section className="flex flex-col gap-3" aria-label="Pilih tool dan version">
+                  <SectionHeading step={1} title="Tool & Version" description="Pilih produk dan versi yang akan memakai key ini." />
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <FieldWrap label="Tool Type" htmlFor="gen-tool">
                     <Select
                       id="gen-tool"
@@ -235,50 +355,88 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                       disabled={!selectedTool}
                     />
                   </FieldWrap>
-                </div>
+                  </div>
+                </section>
 
+                <section className="flex flex-col gap-3" aria-label="Pilih durasi">
+                  <SectionHeading step={2} title="Durasi" description={isOwner ? "Pakai preset atau tentukan masa aktif sendiri." : "Harga mengikuti preset yang dipilih."} />
                 {isOwner && (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-label font-medium text-muted">Durasi</span>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="inline-flex w-fit rounded-lg border border-glass-border bg-white/[0.03] p-0.5" role="group" aria-label="Mode durasi">
+                    {(
+                      [
+                        { value: "preset", label: "Preset" },
+                        { value: "custom", label: "Custom" },
+                      ] as const
+                    ).map((mode) => (
                       <button
+                        key={mode.value}
                         type="button"
-                        onClick={() => setDurationMode("preset")}
-                        className={`h-9 rounded-lg border px-3 text-label transition-colors duration-150 ${
-                          durationMode === "preset"
-                            ? "border-accent/50 bg-accent/15 text-accent"
-                            : "border-glass-border text-muted hover:bg-white/5"
-                        }`}
+                        aria-pressed={durationMode === mode.value}
+                        onClick={() => setDurationMode(mode.value)}
+                        className={cn(
+                          "min-h-8 rounded-md px-3 text-label transition-colors duration-150",
+                          durationMode === mode.value ? "bg-accent-soft font-semibold text-accent" : "text-muted hover:text-text"
+                        )}
                       >
-                        Pilih preset
+                        {mode.label}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setDurationMode("custom")}
-                        className={`h-9 rounded-lg border px-3 text-label transition-colors duration-150 ${
-                          durationMode === "custom"
-                            ? "border-accent/50 bg-accent/15 text-accent"
-                            : "border-glass-border text-muted hover:bg-white/5"
-                        }`}
-                      >
-                        Custom
-                      </button>
-                    </div>
+                    ))}
                   </div>
                 )}
 
                 {isOwner && durationMode === "custom" ? (
                   <FieldWrap label="Custom durasi (hari)" htmlFor="gen-custom-days" hint="1–3650 hari.">
-                    <Input
-                      id="gen-custom-days"
-                      type="number"
-                      min={1}
-                      max={3650}
-                      value={customDays}
-                      onChange={(event) => setCustomDays(event.target.value)}
-                      className="tabular"
-                    />
+                    <NumberStepper id="gen-custom-days" label="custom durasi" value={customDays} onChange={setCustomDays} min={1} max={3650} />
+                    <QuickChips values={[7, 30, 90, 365]} current={customDays} onPick={setCustomDays} label="custom durasi" />
                   </FieldWrap>
+                ) : presets.length > 0 && presets.length <= 6 ? (
+                  <div className="flex flex-col gap-2">
+                    <span id="gen-duration-label" className="text-label font-medium text-muted">
+                      Preset durasi
+                    </span>
+                    <div role="radiogroup" aria-labelledby="gen-duration-label" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {presets.map((preset) => {
+                        const selected = preset.id === presetId;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => setPresetId(preset.id)}
+                            className={cn(
+                              "rounded-card border p-3 text-left transition-[background-color,border-color,transform] duration-150 active:scale-[0.99]",
+                              selected
+                                ? "border-accent/45 bg-accent-soft shadow-[0_8px_24px_rgba(139,147,255,0.12)]"
+                                : "border-glass-border bg-white/[0.025] hover:border-white/15 hover:bg-white/[0.045]"
+                            )}
+                          >
+                            <span className="mb-2 flex items-center justify-between gap-2">
+                              <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg border", selected ? "border-accent/25 text-accent" : "border-glass-border text-muted")}>
+                                <TimerIcon size={16} strokeWidth={1.5} />
+                              </span>
+                              {selected && <CheckCircleIcon size={17} strokeWidth={1.5} className="text-accent" />}
+                            </span>
+                            <span className="block truncate text-body font-medium text-text">{preset.name}</span>
+                            <span className="mt-1 flex flex-wrap items-center gap-1.5 text-label text-muted">
+                              <span className="tabular">{formatNumber(preset.days)} hari</span>
+                              {!isOwner && (
+                                <span className="rounded-full border border-accent/20 bg-accent-soft px-1.5 py-0.5 font-medium text-accent tabular">
+                                  {formatNumber(preset.credit_cost)} credit
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {estimatedExpiry && (
+                      <p className="flex items-center gap-1.5 text-label text-muted">
+                        <CalendarIcon size={14} strokeWidth={1.5} className="text-accent" />
+                        Perkiraan expired: <span className="text-text">{formatDate(estimatedExpiry.toISOString())}</span>
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <FieldWrap label="Durasi" htmlFor="gen-duration">
                     <Select
@@ -294,101 +452,162 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     />
                   </FieldWrap>
                 )}
+                </section>
 
+                <section className="flex flex-col gap-3" aria-label="Atur device dan jumlah key">
+                  <SectionHeading step={3} title="Device & Jumlah" description="Tentukan batas perangkat dan banyak key dalam batch ini." />
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <FieldWrap label="Max device" htmlFor="gen-max-device" hint={`Minimal 1, maksimal ${limits.maxDevice}.`}>
-                    <Input
-                      id="gen-max-device"
-                      type="number"
-                      min={1}
-                      max={limits.maxDevice}
-                      value={maxDevice}
-                      onChange={(event) => setMaxDevice(event.target.value)}
-                      className="tabular"
-                    />
+                    <NumberStepper id="gen-max-device" label="max device" value={maxDevice} onChange={setMaxDevice} min={1} max={limits.maxDevice} />
+                    <QuickChips values={[1, 2, 3, 5].filter((value) => value <= limits.maxDevice)} current={maxDevice} onPick={setMaxDevice} label="max device" />
                   </FieldWrap>
 
                   <FieldWrap label="Quantity" htmlFor="gen-quantity" hint={`1–${limits.maxQty} key sekaligus.`}>
-                    <Input
-                      id="gen-quantity"
-                      type="number"
-                      min={1}
-                      max={limits.maxQty}
-                      value={quantity}
-                      onChange={(event) => setQuantity(event.target.value)}
-                      className="tabular"
-                    />
+                    <NumberStepper id="gen-quantity" label="quantity" value={quantity} onChange={setQuantity} min={1} max={limits.maxQty} />
+                    <QuickChips values={[1, 5, 10, 25].filter((value) => value <= limits.maxQty)} current={quantity} onPick={setQuantity} label="quantity" />
                   </FieldWrap>
                 </div>
+                </section>
 
-                <FieldWrap label="Catatan" htmlFor="gen-note" hint="Opsional, maksimal 500 karakter.">
+                <section className="flex flex-col gap-3" aria-label="Catatan batch">
+                  <SectionHeading step={4} title="Catatan" description="Membantu mengenali batch ini di riwayat." />
+                  <FieldWrap label="Catatan" htmlFor="gen-note" hint={`Opsional · ${note.length}/500 karakter`}>
                   <Textarea
                     id="gen-note"
                     value={note}
                     maxLength={500}
                     onChange={(event) => setNote(event.target.value)}
                     placeholder="Contoh: batch reseller A"
-                  />
-                </FieldWrap>
+                    />
+                  </FieldWrap>
+                </section>
 
                 {error && (
-                  <p className="text-label text-banned" role="alert">
+                  <p className="rounded-lg border border-banned/25 bg-banned-soft px-3 py-2 text-label text-banned" role="alert">
                     {error}
                   </p>
                 )}
 
-                <Button type="submit" variant="primary" loading={loading} icon={<PlusIcon size={16} strokeWidth={1.5} />}>
-                  Buat {qty > 1 ? `${qty} Key` : "Key"}
+                <Button type="submit" variant="primary" loading={loading} className="w-full lg:hidden" icon={<PlusIcon size={16} strokeWidth={1.5} />}>
+                  Buat {qty > 1 ? `${formatNumber(qty)} Key` : "Key"}
+                  {!isOwner && totalCost > 0 ? ` · ${formatNumber(totalCost)} credit` : ""}
                 </Button>
               </>
             )}
           </GlassCard>
         </form>
 
-        {/* Ringkasan */}
-        <div className="lg:col-span-5">
+        {/* Ringkasan ala struk checkout */}
+        <aside className="lg:col-span-5" aria-label="Ringkasan generate key">
           <div className="lg:sticky lg:top-[72px]">
-            <GlassCard className="flex flex-col gap-3">
-              <h2 className="text-body font-medium text-text">Ringkasan</h2>
+            <GlassCard className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-body font-medium text-text">Ringkasan</h2>
+                <span className="rounded-full border border-accent/20 bg-accent-soft px-2 py-0.5 text-label font-medium text-accent">
+                  {formatNumber(qty)} key
+                </span>
+              </div>
 
-              {[
-                { label: "Tool", value: selectedTool?.name ?? "-" },
-                { label: "Version", value: selectedVersion?.name ?? "-" },
-                {
-                  label: "Durasi",
-                  value: isOwner && durationMode === "custom" ? `${days || 0} hari` : selectedPreset?.name ?? "-",
-                },
-                { label: "Max device", value: maxDevice || "-" },
-                { label: "Quantity", value: `${qty} key` },
-                { label: "Biaya credit", value: isOwner ? "Gratis (Owner)" : `${formatNumber(totalCost)} credit` },
-              ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between text-body">
-                  <span className="text-muted">{row.label}</span>
-                  <span className="tabular text-text">{row.value}</span>
-                </div>
-              ))}
-
-              {!isOwner && (
-                <>
-                  <div className="h-px w-full bg-glass-border" />
-                  <div className="flex items-center justify-between text-body">
-                    <span className="text-muted">Sisa credit sekarang</span>
-                    <span className="tabular text-text">{formatNumber(currentCredit)}</span>
+              <dl className="flex flex-col gap-2.5 text-body">
+                {[
+                  { label: "Tool", value: selectedTool?.name ?? "Belum dipilih" },
+                  { label: "Version", value: selectedVersion?.name ?? "Belum dipilih" },
+                  { label: "Durasi", value: durationLabel },
+                  {
+                    label: "Perkiraan expired",
+                    value: estimatedExpiry ? formatDate(estimatedExpiry.toISOString()) : "Pilih durasi dulu",
+                  },
+                  { label: "Max device", value: maxDevice || "—" },
+                  { label: "Quantity", value: `${formatNumber(qty)} key` },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-baseline justify-between gap-4">
+                    <dt className="shrink-0 text-muted">{row.label}</dt>
+                    <dd className="min-w-0 truncate text-right font-medium text-text tabular" title={row.value}>{row.value}</dd>
                   </div>
-                  <div className="flex items-center justify-between text-body">
-                    <span className="text-muted">Sisa setelah generate</span>
-                    <span className={`tabular ${creditAfter < 0 ? "text-banned" : "text-text"}`}>
-                      {formatNumber(Math.max(creditAfter, 0))}
+                ))}
+              </dl>
+
+              <div className="border-t border-dashed border-glass-border" aria-hidden />
+
+              {isOwner ? (
+                <div className="flex items-start gap-3 rounded-card border border-accent/15 bg-accent-soft p-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/20 text-accent">
+                    <WalletIcon size={17} strokeWidth={1.5} />
+                  </span>
+                  <div>
+                    <p className="text-body font-medium text-text">Tanpa potongan credit</p>
+                    <p className="mt-0.5 text-label text-muted">Generate sebagai owner tidak mengurangi saldo credit reseller mana pun.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-baseline justify-between gap-4 text-body">
+                    <span className="text-muted">Harga per key</span>
+                    <span className="text-text tabular">{formatNumber(costPerKey)} × {formatNumber(qty)}</span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4">
+                    <span className="text-body font-medium text-text">Total biaya</span>
+                    <span className={cn("text-xl font-semibold tabular", creditAfter < 0 ? "text-banned" : "text-text")}>
+                      {formatNumber(totalCost)} <span className="text-label font-medium text-muted">credit</span>
                     </span>
                   </div>
+
+                  <div>
+                    <div className="mb-1.5 flex items-center justify-between text-label">
+                      <span className="text-muted">Credit terpakai</span>
+                      <span className="text-text tabular">{formatNumber(Math.round(creditUsePercent))}%</span>
+                    </div>
+                    <div
+                      className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]"
+                      role="progressbar"
+                      aria-label="Persentase credit terpakai"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(creditUsePercent)}
+                    >
+                      <div
+                        className={cn("h-full rounded-full transition-[width] duration-300", creditAfter < 0 ? "bg-banned" : "bg-accent")}
+                        style={{ width: `${creditUsePercent}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-label">
+                    <div className="rounded-lg border border-glass-border bg-white/[0.025] px-2.5 py-2">
+                      <p className="text-muted">Credit sekarang</p>
+                      <p className="mt-0.5 text-body font-medium text-text tabular">{formatNumber(currentCredit)}</p>
+                    </div>
+                    <div className={cn("rounded-lg border px-2.5 py-2", creditAfter < 0 ? "border-banned/25 bg-banned-soft" : "border-active/20 bg-active-soft")}>
+                      <p className="text-muted">Setelah generate</p>
+                      <p className={cn("mt-0.5 text-body font-medium tabular", creditAfter < 0 ? "text-banned" : "text-active")}>
+                        {formatNumber(Math.max(creditAfter, 0))}
+                      </p>
+                    </div>
+                  </div>
                   {creditAfter < 0 && (
-                    <p className="text-label text-banned">Credit tidak cukup (sisa {currentCredit}).</p>
+                    <p className="text-label text-banned" role="alert">
+                      Credit tidak cukup — kurang {formatNumber(Math.abs(creditAfter))} credit.
+                    </p>
                   )}
-                </>
+                </div>
               )}
+
+              <Button
+                type="submit"
+                form="generate-key-form"
+                variant="primary"
+                loading={loading}
+                disabled={metaLoading}
+                className="hidden w-full lg:inline-flex"
+                icon={<PlusIcon size={16} strokeWidth={1.5} />}
+              >
+                Buat {qty > 1 ? `${formatNumber(qty)} Key` : "Key"}
+                {!isOwner && totalCost > 0 ? ` · ${formatNumber(totalCost)} credit` : ""}
+              </Button>
+              <p className="hidden text-center text-label text-muted lg:block">Key langsung tersimpan dan tercatat di Credit Log.</p>
             </GlassCard>
           </div>
-        </div>
+        </aside>
       </div>
 
       {/* Hasil */}
@@ -402,7 +621,7 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Button size="sm" onClick={copyAll}>
+              <Button size="sm" variant="primary" onClick={copyAll} icon={<CopyIcon size={15} strokeWidth={1.5} />}>
                 Salin Semua
               </Button>
               <Button size="sm" onClick={exportTxt} icon={<DownloadIcon size={16} strokeWidth={1.5} />}>

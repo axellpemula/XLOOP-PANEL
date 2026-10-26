@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DownloadIcon, RefreshIcon } from "@/components/icons";
+import { DownloadIcon, RefreshIcon, WalletIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
@@ -229,7 +229,15 @@ export function CreditLogView({ role }: { role: Role }) {
               {!loading && rows.length === 0 && (
                 <tr>
                   <td colSpan={isOwner ? 6 : 5}>
-                    <EmptyState message="Belum ada transaksi credit" />
+                    <EmptyState
+                      message={action || from || to || resellerId ? "Tidak ada transaksi yang cocok" : "Belum ada transaksi credit"}
+                      hint={
+                        action || from || to || resellerId
+                          ? "Coba longgarkan filter aksi, tanggal, atau resellernya."
+                          : "Topup dan pemakaian credit untuk generate key akan tercatat di sini."
+                      }
+                      icon={<WalletIcon size={20} strokeWidth={1.5} />}
+                    />
                   </td>
                 </tr>
               )}

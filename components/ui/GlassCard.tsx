@@ -40,6 +40,7 @@ export function GlassCard({
   return (
     <Element
       ref={ref}
+      data-interactive={interactive || undefined}
       onMouseMove={handleMove}
       className={cn(variant, "rounded-card p-4", spotlight && "spotlight-card", interactive && "cursor-pointer", className)}
       {...props}

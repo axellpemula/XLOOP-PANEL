@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { PencilIcon, PlusIcon, TimerIcon, TrashIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
@@ -194,7 +194,14 @@ export function DurationManager() {
               {!loading && items.length === 0 && (
                 <tr>
                   <td colSpan={5}>
-                    <EmptyState message="Belum ada preset durasi" actionLabel="Tambah Durasi" onAction={openCreate} />
+                    <EmptyState
+                      message="Belum ada preset durasi"
+                      hint="Preset menentukan masa aktif key dan harga credit untuk reseller."
+                      icon={<TimerIcon size={20} strokeWidth={1.5} />}
+                      steps={["Tentukan hari", "Atur harga credit", "Aktifkan preset"]}
+                      actionLabel="Tambah Durasi"
+                      onAction={openCreate}
+                    />
                   </td>
                 </tr>
               )}

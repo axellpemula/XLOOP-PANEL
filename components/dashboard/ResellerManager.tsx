@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { EyeIcon, KeyIcon, PlusIcon, RefreshIcon, TrashIcon, WalletIcon } from "@/components/icons";
+import { EyeIcon, KeyIcon, PlusIcon, RefreshIcon, TrashIcon, UsersIcon, WalletIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
@@ -234,7 +234,14 @@ export function ResellerManager() {
               {!loading && rows.length === 0 && (
                 <tr>
                   <td colSpan={6}>
-                    <EmptyState message="Belum ada reseller" actionLabel="Tambah Reseller" onAction={openCreate} />
+                    <EmptyState
+                      message="Belum ada reseller"
+                      hint="Reseller bisa generate key sendiri memakai saldo credit yang kamu atur."
+                      icon={<UsersIcon size={20} strokeWidth={1.5} />}
+                      steps={["Buat akun", "Isi credit awal", "Reseller generate key"]}
+                      actionLabel="Tambah Reseller"
+                      onAction={openCreate}
+                    />
                   </td>
                 </tr>
               )}

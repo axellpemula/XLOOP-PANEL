@@ -19,6 +19,10 @@
      perhatian dengan status. Kontras 6,8:1 di atas --bg. */
   --accent: #8b93ff;
   --accent-ink: #12131f;
+  --accent-soft: rgba(139, 147, 255, 0.12);
+  --active-soft: rgba(111, 174, 130, 0.13);
+  --expired-soft: rgba(201, 163, 91, 0.13);
+  --banned-soft: rgba(201, 100, 92, 0.13);
   --active: #6fae82;
   --expired: #c9a35b;
   --banned: #c9645c;
@@ -47,19 +51,42 @@ body {
   overscroll-behavior: none;
 }
 
-/* Background halaman: dasar gelap + 2 blob statis */
+/* Background halaman: aurora periwinkle sangat tipis di atas dasar hangat.
+   Lapisan ini yang membuat permukaan glass punya sesuatu untuk dibiaskan;
+   alpha sengaja rendah supaya panel kerja tetap tenang dan kontras teks aman. */
 body::before {
+  content: "";
+  position: fixed;
+  inset: -12%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(820px circle at 12% -4%, rgba(139, 147, 255, 0.16), transparent 62%),
+    radial-gradient(760px circle at 92% 12%, rgba(96, 132, 190, 0.12), transparent 60%),
+    radial-gradient(900px circle at 78% 108%, rgba(111, 174, 130, 0.07), transparent 62%),
+    radial-gradient(560px circle at 38% 88%, rgba(201, 163, 91, 0.045), transparent 62%),
+    #141311;
+  animation: aurora-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+  from { transform: translate3d(-1.2%, -0.8%, 0) scale(1); }
+  to { transform: translate3d(1.2%, 1%, 0) scale(1.04); }
+}
+
+/* Dot-grid + vignette: tekstur mikro supaya bidang kosong tidak terasa flat.
+   Mask memudarkannya ke tepi layar. */
+body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  /* Dua blob statis, diselaraskan dengan aksen periwinkle.
-     Alpha tetap redup supaya efek kaca terlihat tanpa bikin ramai. */
-  background:
-    radial-gradient(600px circle at 15% 10%, rgba(139, 147, 255, 0.11), transparent 60%),
-    radial-gradient(700px circle at 85% 85%, rgba(86, 110, 150, 0.18), transparent 60%),
-    #141311;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1.4px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 88% 72% at 50% 38%, black 24%, transparent 78%);
+  mask-image: radial-gradient(ellipse 88% 72% at 50% 38%, black 24%, transparent 78%);
+  opacity: 0.5;
 }
 
 /* =========================================================
@@ -70,7 +97,11 @@ body::before {
 .glass-strong,
 .glass-table {
   border: 1px solid var(--glass-border);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  /* Highlight atas + bayangan jatuh lembut memberi rasa ketebalan kaca. */
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 12px 32px rgba(0, 0, 0, 0.16);
 }
 
 .glass {
@@ -101,6 +132,12 @@ body::before {
   .glass-table {
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
+  }
+
+  /* Aurora diam di mobile: background bergerak di belakang banyak
+     permukaan backdrop-blur memaksa repaint terus-menerus. */
+  body::before {
+    animation: none;
   }
 }
 
@@ -162,8 +199,14 @@ body::before {
   }
 
   .spotlight-card:hover {
+    border-color: rgba(255, 255, 255, 0.16) !important;
+  }
+
+  /* Angkat kartu hanya kalau memang bisa diklik — kartu statistik yang ikut
+     terangkat saat hover memberi kesan bisa ditekan padahal tidak. */
+  .spotlight-card[data-interactive="true"]:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
   }
 }
 
@@ -203,6 +246,16 @@ body::before {
 textarea.field {
   min-height: 88px;
   resize: vertical;
+}
+
+/* Permukaan aksi utama — dipakai Button primary dan tautan bergaya tombol
+   supaya gradient + glow aksennya selalu sama. */
+.primary-surface {
+  background-image: linear-gradient(135deg, #a5acff 0%, var(--accent) 48%, #7c86f5 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(18, 19, 31, 0.18),
+    0 8px 24px rgba(139, 147, 255, 0.26);
 }
 
 .field-error {
@@ -271,7 +324,9 @@ textarea.field {
   height: 40px;
   padding: 0 12px;
   text-align: left;
-  font-size: 12px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   font-weight: 500;
   color: var(--muted);
   white-space: nowrap;
@@ -318,11 +373,26 @@ textarea.field {
   padding-left: 16px;
 }
 
-/* Skeleton */
+/* Skeleton shimmer: sapuan cahaya bergerak, terasa seperti konten sedang
+   dimuat (lebih informatif dari sekadar berkedip). */
 .skeleton-block {
-  background-color: rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.055);
   border-radius: 8px;
-  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+.skeleton-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
 }
 
 @keyframes pulse-soft {
@@ -354,5 +424,13 @@ textarea.field {
 
   .spotlight-card:hover {
     transform: none !important;
+  }
+
+  body::before {
+    animation: none !important;
+  }
+
+  .skeleton-block::after {
+    display: none !important;
   }
 }

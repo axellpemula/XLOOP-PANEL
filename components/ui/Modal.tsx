@@ -182,7 +182,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
           <motion.div
             className="absolute inset-0 bg-black/50"
             style={{ backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}
@@ -199,16 +199,18 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             aria-labelledby={titleId}
             aria-describedby={description ? descriptionId : undefined}
             tabIndex={-1}
-            className={cn("glass-strong relative z-10 w-full rounded-card p-5 outline-none", sizes[size])}
+            className={cn("glass-strong relative z-10 w-full rounded-[20px] p-5 outline-none sm:rounded-card", sizes[size])}
             style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.35)" }}
-            initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
             animate={
               reduce
                 ? { opacity: 1, transition: { duration: 0.1 } }
-                : { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 400, damping: 32 } }
+                : { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 400, damping: 32 } }
             }
-            exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, transition: { duration: 0.12 } }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98, transition: { duration: 0.12 } }}
           >
+            {/* Pegangan visual bottom-sheet di mobile */}
+            <span className="mx-auto mb-4 block h-1 w-10 rounded-full bg-white/15 sm:hidden" aria-hidden />
             {onSubmit ? (
               <form
                 onSubmit={(event) => {

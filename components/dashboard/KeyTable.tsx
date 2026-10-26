@@ -1,14 +1,16 @@
 "use client";
 
-import { BanIcon, PencilIcon, ResetIcon, TrashIcon } from "@/components/icons";
+import { BanIcon, DeviceIcon, KeyIcon, PencilIcon, ResetIcon, TrashIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { Reveal } from "@/components/ui/Reveal";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
 import { effectiveStatus } from "@/lib/utils/status";
-import { formatDateTime, formatNumber } from "@/lib/utils/format";
+import { daysLeft, formatDate, formatDateTime, formatNumber } from "@/lib/utils/format";
+import { cn } from "@/lib/utils/cn";
 import type { LicenseKey, Role } from "@/lib/utils/types";
 
 export type KeySortField = "created_at" | "expired_at" | "status";
@@ -25,6 +27,8 @@ interface KeyTableProps {
   onToggleBan: (key: LicenseKey) => void;
   onDelete: (key: LicenseKey) => void;
   onCreate?: () => void;
+  filtered?: boolean;
+  onClearFilters?: () => void;
 }
 
 function SortHeader({
@@ -72,6 +76,8 @@ export function KeyTable({
   onToggleBan,
   onDelete,
   onCreate,
+  filtered,
+  onClearFilters,
 }: KeyTableProps) {
   const isOwner = role === "owner";
   const columns = isOwner ? 10 : 9;
@@ -111,9 +117,16 @@ export function KeyTable({
               <tr>
                 <td colSpan={columns}>
                   <EmptyState
-                    message="Belum ada key"
-                    actionLabel={onCreate ? "Buat Key" : undefined}
-                    onAction={onCreate}
+                    message={filtered ? "Tidak ada key yang cocok" : "Belum ada key"}
+                    hint={
+                      filtered
+                        ? "Tidak ada hasil untuk filter saat ini. Coba ubah kata kunci atau reset filternya."
+                        : "Key pertama bisa dibuat dalam tiga langkah singkat."
+                    }
+                    icon={<KeyIcon size={20} strokeWidth={1.5} />}
+                    steps={filtered ? undefined : ["Pilih tool & version", "Atur durasi", "Generate key"]}
+                    actionLabel={filtered && onClearFilters ? "Reset filter" : onCreate ? "Buat Key" : undefined}
+                    onAction={filtered && onClearFilters ? onClearFilters : onCreate}
                   />
                 </td>
               </tr>
@@ -122,7 +135,21 @@ export function KeyTable({
             {!loading &&
               keys.map((key, index) => {
                 const status = effectiveStatus(key.status, key.expired_at);
-                const deviceLabel = `${key.device_count ?? 0}/${key.max_device}`;
+                const deviceCount = key.device_count ?? 0;
+                const deviceLabel = `${deviceCount}/${key.max_device}`;
+                const devicePercent = key.max_device > 0 ? Math.min(100, (deviceCount / key.max_device) * 100) : 0;
+                const remainingDays = daysLeft(key.expired_at);
+                const expiryHint =
+                  status === "expired"
+                    ? { text: "Sudah expired", className: "text-expired" }
+                    : remainingDays === null
+                      ? null
+                      : remainingDays === 0
+                        ? { text: "Expired hari ini", className: "text-expired" }
+                        : {
+                            text: `${formatNumber(remainingDays)} hari lagi`,
+                            className: remainingDays <= 7 ? "text-expired" : "text-muted",
+                          };
 
                 const cells = (
                   <>
@@ -146,14 +173,43 @@ export function KeyTable({
                     <td className="tabular text-muted">
                       {key.duration_days === null ? "Lifetime" : `${formatNumber(key.duration_days)} hari`}
                     </td>
-                    <td className="text-muted">
-                      {key.expired_at ? formatDateTime(key.expired_at) : "Lifetime"}
+                    <td>
+                      <span className="flex flex-col">
+                        <span className="text-text" title={key.expired_at ? formatDateTime(key.expired_at) : undefined}>
+                          {key.expired_at ? formatDate(key.expired_at) : "Lifetime"}
+                        </span>
+                        {expiryHint && <span className={cn("text-[11px] tabular", expiryHint.className)}>{expiryHint.text}</span>}
+                      </span>
                     </td>
-                    <td className="tabular text-muted">{deviceLabel}</td>
-                    {isOwner && <td className="text-muted">{key.creator?.username ?? "-"}</td>}
+                    <td>
+                      <span className="flex min-w-[74px] flex-col gap-1">
+                        <span className="flex items-center gap-1 text-muted tabular">
+                          <DeviceIcon size={13} strokeWidth={1.5} />
+                          {deviceLabel}
+                          {deviceCount >= key.max_device && key.max_device > 0 && <span className="text-banned">Penuh</span>}
+                        </span>
+                        <span className="h-1 overflow-hidden rounded-full bg-white/[0.07]" aria-hidden>
+                          <span
+                            className={cn(
+                              "block h-full rounded-full",
+                              devicePercent >= 100 ? "bg-banned" : devicePercent >= 80 ? "bg-expired" : "bg-active"
+                            )}
+                            style={{ width: `${devicePercent}%` }}
+                          />
+                        </span>
+                      </span>
+                    </td>
+                    {isOwner && (
+                      <td>
+                        <span className="flex items-center gap-2 text-muted">
+                          <Avatar name={key.creator?.username ?? "?"} className="h-6 w-6 rounded-md text-[10px]" />
+                          <span className="truncate">{key.creator?.username ?? "-"}</span>
+                        </span>
+                      </td>
+                    )}
                     <td className="text-muted">{formatDateTime(key.created_at)}</td>
                     <td>
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1 transition-opacity duration-150 md:opacity-60 md:focus-within:opacity-100 md:group-hover:opacity-100">
                         <Button
                           size="sm"
                           onClick={(event) => {
@@ -206,14 +262,14 @@ export function KeyTable({
                 // Stagger hanya 15 baris pertama.
                 if (index < 15) {
                   return (
-                    <Reveal as="tr" key={key.id} index={index} className="cursor-pointer" onClick={() => onDetail(key)}>
+                    <Reveal as="tr" key={key.id} index={index} className="group cursor-pointer" onClick={() => onDetail(key)}>
                       {cells}
                     </Reveal>
                   );
                 }
 
                 return (
-                  <tr key={key.id} className="cursor-pointer" onClick={() => onDetail(key)}>
+                  <tr key={key.id} className="group cursor-pointer" onClick={() => onDetail(key)}>
                     {cells}
                   </tr>
                 );
