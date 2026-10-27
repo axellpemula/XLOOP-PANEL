@@ -62,7 +62,6 @@ export async function POST(request: Request) {
   const ip = getClientIp(request);
   const body = (await readLimitedJson(request, MAX_BODY_BYTES)) as Partial<ValidateBody> | null;
 
-  // ---- validasi input sebelum query apa pun ----
   const keyValue = typeof body?.key === "string" ? body.key.trim().toUpperCase() : "";
   const toolSlug = typeof body?.tool_slug === "string" ? body.tool_slug.trim() : "";
   const toolVersion = typeof body?.tool_version === "string" ? body.tool_version.trim() : "";
@@ -90,7 +89,6 @@ export async function POST(request: Request) {
     return failure("invalid_request", 400);
   }
 
-  // ---- 0. rate limit (dihitung dari database, bukan memori) ----
   const windowStart = minutesAgo(1);
   const [ipResult, keyResult] = await Promise.all([
     admin
@@ -105,7 +103,6 @@ export async function POST(request: Request) {
       .gte("created_at", windowStart),
   ]);
 
-  // Kalau query rate limit gagal (DB bermasalah), tolak dengan aman.
   if (ipResult.error || keyResult.error) {
     return failure("rate_limited", 429);
   }
@@ -124,7 +121,6 @@ export async function POST(request: Request) {
     return failure("rate_limited", 429);
   }
 
-  // ---- anti-bruteforce: IP dengan terlalu banyak invalid_key ----
   const { count: invalidKeyCount } = await admin
     .from("validation_attempts")
     .select("id", { count: "exact", head: true })
@@ -146,7 +142,6 @@ export async function POST(request: Request) {
     return failure(finalReason);
   }
 
-  // ---- 1-5. validasi key, status, tool, version, expired ----
   const { data: keyRow } = await admin
     .from("keys")
     .select(
@@ -176,7 +171,6 @@ export async function POST(request: Request) {
     return deny("wrong_version");
   }
 
-  // ---- 6. register device (atomic lewat fungsi SQL) ----
   const { data: registerData, error: registerError } = await admin.rpc("register_device", {
     p_key_id: key.id,
     p_hwid: hardwareId,
@@ -199,7 +193,6 @@ export async function POST(request: Request) {
     | null;
 
   if (!registerRow || registerRow.result !== "ok") {
-    // Auto-ban: 5 HWID berbeda kena limit dalam 1 jam terakhir.
     const { data: rejects } = await admin
       .from("validation_attempts")
       .select("hardware_id")
@@ -226,10 +219,8 @@ export async function POST(request: Request) {
     return deny("device_limit_exceeded");
   }
 
-  // ---- 7. update last_used ----
   await admin.from("keys").update({ last_used: new Date().toISOString() }).eq("id", key.id);
 
-  // ---- 8. bangun payload + tanda tangani ----
   if (!getPrivateKey()) {
     await logAttempt(admin, {
       ip,
@@ -268,7 +259,6 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  // ---- 9. catat hasil sukses ----
   await logAttempt(admin, {
     ip,
     key_value: keyValue,

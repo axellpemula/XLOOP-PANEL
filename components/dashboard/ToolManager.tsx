@@ -143,9 +143,6 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Gagal menyimpan tool.";
       if (createdTool) {
-        // Tool-nya sudah terlanjur dibuat, payload rahasianya yang gagal.
-        // Alihkan form ke mode edit tool tersebut supaya "Simpan" ulang
-        // memperbarui tool yang sama — bukan membuat duplikat/konflik slug.
         setEditing(createdTool);
         setReplaceSecret(true);
         setFormError(`Tool tersimpan, tetapi payload rahasia gagal disimpan: ${message}`);
@@ -160,7 +157,6 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
 
   async function toggleTool(tool: ToolType) {
     const nextActive = !tool.is_active;
-    // Klik ganda: payload sama terkirim 2x, state lokal terbalik 2x → UI != server.
     if (togglingId === tool.id) return;
     setTogglingId(tool.id);
     try {
@@ -309,7 +305,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
                 <h2 className="text-body font-medium text-text">Public key verifikasi</h2>
                 <SimpleBadge tone={publicKey ? "active" : "expired"}>{publicKey ? "Tersedia" : "Belum diset"}</SimpleBadge>
               </div>
-              <p className="mt-0.5 text-label text-muted">Tanam di sisi tool untuk cek signature response. Detailnya disembunyikan agar halaman tetap ringkas.</p>
+              <p className="mt-0.5 text-label text-muted">Tanam di sisi tool untuk cek signature response.</p>
             </div>
           </div>
 

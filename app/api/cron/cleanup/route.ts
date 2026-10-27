@@ -4,10 +4,6 @@ import { createAdminSupabase } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-/**
- * Cron harian (Vercel): hapus validation_attempts > 7 hari + update_expired_keys().
- * Dilindungi header Authorization: Bearer CRON_SECRET.
- */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const header = request.headers.get("authorization") ?? "";

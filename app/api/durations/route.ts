@@ -8,7 +8,6 @@ export async function GET() {
     const { user, admin } = await requireUser();
 
     let query = admin.from("duration_presets").select("*").order("days", { ascending: true });
-    // Reseller hanya perlu preset aktif (untuk halaman Generate Key).
     if (user.role === "reseller") query = query.eq("is_active", true);
 
     const { data, error } = await query;

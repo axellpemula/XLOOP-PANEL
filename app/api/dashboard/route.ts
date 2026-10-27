@@ -22,16 +22,11 @@ export async function GET() {
 
     const todayISO = startOfTodayISO();
     const weekISO = startOfDaysAgoISO(6);
-    // Chart membawa 90 hari sekaligus; tab 7/30/90 hari di klien cukup
-    // memotong array ini tanpa request tambahan.
     const chartISO = startOfDaysAgoISO(89);
     const days = lastNDates(90);
 
     const keysBase = () => admin.from("keys").select("id", { count: "exact", head: true });
 
-    // Baris chart diambil per batch: satu select biasa bisa terpotong batas
-    // baris PostgREST (umumnya 1000), yang untuk rentang 90 hari akan
-    // membuat chart diam-diam menghitung kurang dari jumlah sebenarnya.
     const chartRowsPromise = (async (): Promise<{ created_at: string }[]> => {
       const rows: { created_at: string }[] = [];
       const batchSize = 1000;
@@ -87,7 +82,6 @@ export async function GET() {
       })),
     };
 
-    // --- Top reseller (owner only) ---
     let topResellers: TopReseller[] = [];
     if (!isReseller) {
       const [{ data: profiles }, { data: keyRows }] = await Promise.all([
@@ -112,7 +106,6 @@ export async function GET() {
         .slice(0, 5);
     }
 
-    // --- Recent activity ---
     let logsQuery = admin
       .from("credit_logs")
       .select("*, user:profiles!credit_logs_user_id_fkey(id,username)")

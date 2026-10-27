@@ -23,7 +23,7 @@ const FEATURES = [
   {
     icon: ShieldIcon,
     title: "HWID & signature",
-    description: "Validasi perangkat dan response bertanda tangan di sisi tool.",
+    description: "Validasi perangkat dan response bertanda tangan di sisi client.",
   },
   {
     icon: WalletIcon,
@@ -174,7 +174,7 @@ export function LoginForm() {
               name="email"
               type="email"
               autoComplete="email"
-              placeholder="nama@xloop.dev"
+              placeholder="nama@gmail.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               disabled={loading}
@@ -205,8 +205,6 @@ export function LoginForm() {
               />
               <button
                 type="button"
-                // Cegah fokus pindah dari input saat diklik mouse, supaya
-                // user bisa lanjut mengetik setelah intip password-nya.
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => setShowPassword((prev) => !prev)}
                 disabled={loading}
@@ -249,7 +247,7 @@ export function LoginForm() {
 
         <p className="mt-5 flex items-start gap-2 text-label leading-relaxed text-muted">
           <ShieldIcon size={14} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
-          Akun reseller dibuat oleh Owner. Tidak ada pendaftaran publik.
+          Tidak ada akun pendaftaran publik.
         </p>
       </section>
     </motion.div>

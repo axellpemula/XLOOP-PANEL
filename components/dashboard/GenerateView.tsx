@@ -196,8 +196,6 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
     void loadMeta();
   }, [loadMeta]);
 
-  // Hasil generate muncul di bawah form + ringkasan; gulirkan ke sana
-  // supaya user (terutama di mobile) tidak mengira hanya toast yang muncul.
   useEffect(() => {
     if (!result) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -212,9 +210,6 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
   const selectedVersion = versions.find((version) => version.id === versionId) ?? null;
   const selectedPreset = presets.find((preset) => preset.id === presetId) ?? null;
 
-  // Jangan clamp diam-diam: nilai mentah dipakai ringkasan & tombol, dan
-  // validasi di submit yang menolak di luar batas. Clamp lama membuat user
-  // mengetik 999 tapi tombol menulis jumlah lain tanpa penjelasan.
   const qty = Number(quantity) || 0;
   const days = durationMode === "custom" && isOwner ? Number(customDays) || 0 : selectedPreset?.days ?? 0;
   const costPerKey = isOwner ? 0 : selectedPreset?.credit_cost ?? 0;
@@ -284,8 +279,6 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
       toast(`${response.keys.length} key dibuat.`, "success");
 
       if (response.summary.credit_left !== null) setCurrentCredit(response.summary.credit_left);
-      // Chip credit di header dirender server (layout) — segarkan agar
-      // saldo di header langsung berkurang tanpa menunggu pindah halaman.
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Gagal membuat key.";
@@ -503,12 +496,12 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                 <section className="flex flex-col gap-3" aria-label="Atur device dan jumlah key">
                   <SectionHeading step={3} title="Device & Jumlah" description="Tentukan batas perangkat dan banyak key dalam batch ini." />
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <FieldWrap label="Max device" htmlFor="gen-max-device" hint={`Minimal 1, maksimal ${limits.maxDevice}.`}>
+                  <FieldWrap label="Max device" htmlFor="gen-max-device">
                     <NumberStepper id="gen-max-device" label="max device" value={maxDevice} onChange={setMaxDevice} min={1} max={limits.maxDevice} />
                     <QuickChips values={[1, 2, 3, 5].filter((value) => value <= limits.maxDevice)} current={maxDevice} onPick={setMaxDevice} label="max device" />
                   </FieldWrap>
 
-                  <FieldWrap label="Quantity" htmlFor="gen-quantity" hint={`1–${limits.maxQty} key sekaligus.`}>
+                  <FieldWrap label="Quantity" htmlFor="gen-quantity">
                     <NumberStepper id="gen-quantity" label="quantity" value={quantity} onChange={setQuantity} min={1} max={limits.maxQty} />
                     <QuickChips values={[1, 5, 10, 25].filter((value) => value <= limits.maxQty)} current={quantity} onPick={setQuantity} label="quantity" />
                   </FieldWrap>
@@ -523,7 +516,7 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                     value={note}
                     maxLength={500}
                     onChange={(event) => setNote(event.target.value)}
-                    placeholder="Contoh: batch reseller A"
+                    placeholder="Contoh: best reseller A"
                     />
                   </FieldWrap>
                 </section>
@@ -650,7 +643,6 @@ export function GenerateView({ role, credit }: { role: Role; credit: number }) {
                 Buat {qty > 1 ? `${formatNumber(qty)} Key` : "Key"}
                 {!isOwner && totalCost > 0 ? ` · ${formatNumber(totalCost)} credit` : ""}
               </Button>
-              <p className="hidden text-center text-label text-muted lg:block">Key langsung tersimpan dan tercatat di Credit Log.</p>
             </GlassCard>
           </div>
         </aside>

@@ -77,14 +77,12 @@ create table if not exists credit_logs (
   created_at timestamptz default now()
 );
 
--- Rahasia per tool. RLS aktif tanpa policy = hanya service role yang bisa akses.
 create table if not exists tool_secrets (
   tool_type_id uuid primary key references tool_types(id) on delete cascade,
   secret_payload text,
   updated_at timestamptz default now()
 );
 
--- Log percobaan validasi. RLS aktif tanpa policy = hanya service role.
 create table if not exists validation_attempts (
   id uuid primary key default gen_random_uuid(),
   ip text not null,
@@ -253,8 +251,10 @@ create policy "Reseller sees own credit logs" on credit_logs for select using (u
 
 insert into duration_presets (name, days, credit_cost, is_active)
 select * from (values
-  ('1 Minggu', 7, 5, true),
-  ('1 Bulan', 30, 15, true),
-  ('3 Bulan', 90, 40, true)
+  ('1 Hari', 7, 5, true),
+  ('3 Hari', 3, 15, true),
+  ('7 Hari', 7, 35, true),
+  ('15 Hari', 15, 75, true),
+  ('30 Hari', 30, 150, true)
 ) as v(name, days, credit_cost, is_active)
 where not exists (select 1 from duration_presets);
