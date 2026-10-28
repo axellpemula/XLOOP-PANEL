@@ -121,8 +121,6 @@ export function DurationManager() {
 
   async function toggle(item: DurationPreset) {
     const nextActive = !item.is_active;
-    // Klik ganda mengirim payload sama dua kali tapi state lokal terbalik
-    // dua kali → tampilan berlawanan dengan server. Kunci per baris.
     if (togglingId === item.id) return;
     setTogglingId(item.id);
     try {
@@ -284,7 +282,7 @@ export function DurationManager() {
               />
             </FieldWrap>
 
-            <FieldWrap label="Harga credit" htmlFor="duration-cost" hint="0 = gratis untuk Reseller.">
+            <FieldWrap label="Harga credit" htmlFor="duration-cost">
               <Input
                 id="duration-cost"
                 type="number"

@@ -66,7 +66,7 @@ Hasil generate bisa di-copy per key, copy semua, dan export `.txt`.
 
 <div align="center">
 
-**Dashboard (Owner)**
+**Dashboard Owner**
 
 <img src="docs/screenshots/dashboard.png" alt="Dashboard" width="880" />
 

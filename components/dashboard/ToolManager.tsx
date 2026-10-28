@@ -571,7 +571,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
             />
           </FieldWrap>
 
-          <FieldWrap label="Slug" htmlFor="tool-slug" hint="Huruf kecil, angka, dan tanda hubung.">
+          <FieldWrap label="Slug" htmlFor="tool-slug">
             <Input
               id="tool-slug"
               value={form.slug}
@@ -643,7 +643,7 @@ export function ToolManager({ publicKey }: { publicKey: string | null }) {
         }
       >
         <div className="flex flex-col gap-3">
-          <FieldWrap label="Nama version" htmlFor="version-name" hint='Contoh: "1.8.0" atau "v2.1 Beta".'>
+          <FieldWrap label="Nama version" htmlFor="version-name">
             <Input
               id="version-name"
               value={versionName}

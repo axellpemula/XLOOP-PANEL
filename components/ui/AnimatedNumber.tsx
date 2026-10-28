@@ -18,12 +18,6 @@ function easeOutCubic(t: number) {
   return 1 - Math.pow(1 - t, 3);
 }
 
-/**
- * Count-up saat pertama terlihat, lalu menganimasikan perubahan nilai
- * berikutnya dari angka yang sedang tampil. (Versi sebelumnya mengunci
- * animasi dengan ref "started", jadi setelah tombol Muat Ulang di dashboard
- * angka statistik tidak pernah berubah walau datanya baru.)
- */
 export function AnimatedNumber({ value, duration = 600, className, prefix, suffix }: AnimatedNumberProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const root = useScrollRoot();

@@ -249,7 +249,7 @@ export function DashboardView({ role, credit }: { role: Role; credit: number }) 
             <GlassCard className="h-full">
               <div className="mb-4">
                 <h2 className="text-body font-medium text-text">Aktivitas Key</h2>
-                <p className="mt-0.5 text-label text-muted">Key yang dibuat per hari (WIB)</p>
+                <p className="mt-0.5 text-label text-muted">Key yang dibuat per hari</p>
               </div>
               <KeyChart data={stats.chart} />
             </GlassCard>

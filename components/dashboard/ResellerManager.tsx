@@ -63,8 +63,6 @@ export function ResellerManager() {
   }, [load]);
 
   function openCreate() {
-    // Bersihkan error sisa percobaan sebelumnya supaya tidak muncul lagi
-    // saat modal dibuka ulang.
     setCreateError(null);
     setCreateOpen(true);
   }
@@ -119,8 +117,6 @@ export function ResellerManager() {
   }
 
   async function toggleActive(reseller: Reseller, nextActive: boolean = !reseller.is_active) {
-    // Abaikan klik ganda selagi request berjalan: payload yang sama terkirim
-    // dua kali sementara state lokal terbalik dua kali → UI ≠ server.
     if (togglingId === reseller.id) return;
     setTogglingId(reseller.id);
     try {
@@ -599,7 +595,7 @@ export function ResellerManager() {
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-glass-border bg-white/[0.03] px-3 py-2">
-              <span className="text-label text-muted">Akun aktif (bisa login)</span>
+              <span className="text-label text-muted">Akun aktif</span>
               <Switch
                 checked={detailTarget.is_active}
                 onChange={(next) => toggleActive(detailTarget, next)}

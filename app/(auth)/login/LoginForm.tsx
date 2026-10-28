@@ -66,8 +66,6 @@ export function LoginForm() {
         method: "POST",
         body: JSON.stringify({ email: email.trim(), password }),
       });
-      // Tolak "//host lain" & backslash: startsWith("/") saja masih lolos
-      // untuk URL protocol-relative yang mengarah keluar situs.
       const safeNext =
         nextPath.startsWith("/") && !nextPath.startsWith("//") && !nextPath.startsWith("/\\")
           ? nextPath
@@ -244,11 +242,6 @@ export function LoginForm() {
             Masuk
           </Button>
         </form>
-
-        <p className="mt-5 flex items-start gap-2 text-label leading-relaxed text-muted">
-          <ShieldIcon size={14} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
-          Tidak ada akun pendaftaran publik.
-        </p>
       </section>
     </motion.div>
   );
